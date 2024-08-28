@@ -1,0 +1,82 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+<style>
+    h1 {
+        font-size: 36px;
+        text-align: center;
+        font-weight: bold;
+    }
+</style>
+<h1>THỐNG KÊ SỐ LƯỢNG</h1>
+<ul>
+    <li><strong>Tổng số bài viết (Post)</strong>: {{ total_posts }} bài.</li>
+    <li><strong>Tổng số bài khảo sát (Survey)</strong>: {{ total_surveys }} bài.</li>
+    <li><strong>Tổng số người dùng (User)</strong>: {{ total_users }} người.</li>
+</ul>
+
+<form method="get">
+    <label for="period">Chọn theo:</label>
+    <select id="period" name="period">
+        <option value="month" {% if period == "month" %}selected{% endif %}>Tháng</option>
+        <option value="quarter" {% if period == "quarter" %}selected{% endif %}>Quý</option>
+        <option value="year" {% if period == "year" %}selected{% endif %}>Năm</option>
+    </select>
+    <label for="date">Chọn thời gian:</label>
+    <input type="month" id="date" name="date" value="{{ date }}">
+    <button type="submit">Xem thống kê</button>
+</form>
+
+{% if no_data %}
+    <p>Không có dữ liệu trong khoảng thời gian này.</p>
+{% else %}
+    <div style="width: 60%">
+        <canvas id="myChart"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let labels = [];
+        let data = [];
+
+        {% for stat in survey_stats %}
+            labels.push('{{ stat.period|date:"Y-m" }}');  // Điều chỉnh định dạng ngày tháng nếu cần
+            data.push({{ stat.count }});
+        {% endfor %}
+
+        window.onload = function() {
+            if (labels.length > 0) {
+                const ctx = document.getElementById('myChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Số lượng bài khảo sát',
+                            data: data,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+        };
+    </script>
+{% endif %}
+{% endblock %}
+
+
+
