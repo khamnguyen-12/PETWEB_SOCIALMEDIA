@@ -86,8 +86,6 @@ class Interaction(BaseModel):
         abstract = True
 
 
-class Comment(Interaction):
-    comment = models.TextField()
 
 
 class Reaction(Interaction):
@@ -104,6 +102,10 @@ class Reaction(Interaction):
 
     class Meta:
         unique_together = ('user', 'post')
+
+
+class Comment(Interaction):
+    comment = models.TextField()
 
 
 class Notification(models.Model):

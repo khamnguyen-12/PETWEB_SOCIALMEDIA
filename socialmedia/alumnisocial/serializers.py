@@ -71,9 +71,32 @@ class VideoSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     images = ImageSerializer(many=True, required=False)
     videos = VideoSerializer(many=True, required=False)
+    reacted = serializers.SerializerMethodField()  # Thêm trường reacted
+    user = UserDetailSerializer()
+    userReactType = serializers.SerializerMethodField()  # Thêm trường cho react của user hiện tại
+
     class Meta:
         model = Post
-        fields = ['id', 'content', 'images', 'comment_blocked', 'created_date', 'updated_date', 'videos']
+        fields = ['id', 'content', 'images', 'comment_blocked', 'created_date', 'updated_date',
+                  'videos', 'reacted', 'user', 'userReactType']
+
+    def get_reacted(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            reaction = Reaction.objects.filter(post=obj, user=user, active=True).first()
+            if reaction:
+                return reaction.type
+        return None
+
+    def get_userReactType(self, obj):
+        # Lấy thông tin của user đang đăng nhập từ request
+        user = self.context['request'].user
+        if user.is_authenticated:
+            # Tìm phản hồi của người dùng cho bài viết hiện tại
+            reaction = Reaction.objects.filter(user=user, post=obj).first()
+            if reaction:
+                return reaction.type  # Trả về type của react (1: Like, 2: Haha, 3: Love, ...)
+        return None  # Trả về None nếu user chưa react
 
 
 # thiếu fields 'shared_post'
@@ -91,11 +114,13 @@ class PostDetailSerializer(PostSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = UserInteractionSerializer()
+    user = UserInteractionSerializer(read_only=True)
 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ['id', 'comment', 'post', 'user', 'created_date']
+        read_only_fields = ['id', 'created_date', 'user']
+
 
 class ReactionSerializer(serializers.ModelSerializer):
     user = UserInteractionSerializer()
@@ -104,4 +129,3 @@ class ReactionSerializer(serializers.ModelSerializer):
         model = Reaction
         fields = '__all__'
 
-#

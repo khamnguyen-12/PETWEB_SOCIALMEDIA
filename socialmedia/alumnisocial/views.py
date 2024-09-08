@@ -5,6 +5,8 @@ from django.views.decorators.debug import sensitive_post_parameters
 from oauth2_provider.models import RefreshToken
 from oauth2_provider.views import TokenView
 from rest_framework import generics, viewsets, parsers, permissions, generics, status
+from rest_framework.exceptions import NotFound
+
 from .models import *
 from django.http import HttpResponse, JsonResponse
 from rest_framework.response import Response
@@ -20,7 +22,7 @@ from django.contrib.auth import get_user_model
 from . import serializers, perms, paginators, mixins, dao
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .serializers import CoverImageUpdateSerializer
+from .serializers import CoverImageUpdateSerializer, CommentSerializer, UserInteractionSerializer
 
 
 # chỉnh thành ModelViewset
@@ -105,20 +107,17 @@ class UserViewSet(viewsets.ViewSet,
 
         return Response(serializers.PostSerializer(post).data, status=status.HTTP_201_CREATED)
 
-    # lấy tất cả bài đăng từ users được gui thông qua {id}
-    # chỉnh detail = True khi muoon nhập {id}
     @action(methods=['get'], detail=False, url_path='list_posts')
-    def user_list_posts(self, request):
+    def list_posts(self, request):
         user = request.user
         posts = Post.objects.filter(user=user).order_by('id')
-        serializer = serializers.PostSerializer(posts, many=True)
+        serializer = serializers.PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
     @action(methods=['GET'], detail=False, url_path='search')
     def search(self, request):
         users = dao.search_people(params=request.GET)
-
         return Response(serializers.UserInteractionSerializer(users, many=True).data,
                         status=status.HTTP_200_OK)
 
@@ -172,6 +171,12 @@ class PostViewSet(viewsets.ViewSet,
                 queries = user.post_set.filter(active=True).order_by('-created_date').all()
         return queries
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({
+            'request': self.request,  # Truyền request vào context
+        })
+        return context
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()  # Copy the request data
@@ -211,22 +216,6 @@ class PostViewSet(viewsets.ViewSet,
         # comment từ phương thức post sẽ đc gán cho truong comment của model Comment
         c = Comment.objects.create(user=request.user, post=self.get_object(), comment=request.data.get('comment'))
         return Response(serializers.CommentSerializer(c).data, status=status.HTTP_201_CREATED)
-
-    # thả react cho bài viết, nhập type = 1/2/3/4 để thả
-    # @action(methods=['post'], detail=True, url_path='reacts')
-    # def react_posts(self, request, pk):
-    #     type = int(request.data.get('type'))
-    #     reaction, created = Reaction.objects.get_or_create(user=request.user, post=self.get_object(),
-    #                                                        type=type)
-    #     # Kiểm tra xem type có hợp lệ không
-    #     if type not in [reaction_type.value for reaction_type in Reaction.ReactionTypes]:
-    #         return Response({"detail": "Invalid reaction type."}, status=status.HTTP_400_BAD_REQUEST)
-    #
-    #     if not created:
-    #         reaction.active = not reaction.active
-    #         reaction.save()
-    #     post_detail_serializer = self.get_serializer(self.get_object(), context={'request': request})
-    #     return Response(post_detail_serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=['post'], detail=True, url_path='reacts')
     def react_posts(self, request, pk):
@@ -281,7 +270,7 @@ class CommentViewSet(viewsets.ViewSet,
                      generics.DestroyAPIView):
     queryset = Comment.objects.filter(active=True).all()
     serializer_class = serializers.CommentSerializer
-    permission_classes = [permissions.AllowAny()]
+    permission_classes = [permissions.IsAuthenticated()]
 
     # permission_classes = [perms.IsOwner]
 
@@ -289,3 +278,88 @@ class CommentViewSet(viewsets.ViewSet,
         if self.action.__eq__('destroy'):
             return [perms.IsCommentAuthorOrPostAuthor()]
         return self.permission_classes
+
+    def create(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('post_id')  # Lấy post_id từ URL
+        # Kiểm tra xem bài viết có tồn tại không
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            raise NotFound('Bài viết không tồn tại')
+
+        data = request.data.copy()
+        data['user'] = request.user.id  # Gán người dùng hiện tại là tác giả bình luận
+        data['post'] = post.id  # Gán post_id từ URL vào dữ liệu
+
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=True, methods=['get'], url_path='list-comments')
+    def list_comments(self, request, pk=None):
+        """API để lấy danh sách comment của bài viết theo id (pk là id của bài viết)"""
+        try:
+            post = Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Lấy tất cả comment của bài viết
+        comments = Comment.objects.filter(post=post, active=True)
+
+        # Serialize dữ liệu comment
+        serializer = CommentSerializer(comments, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='add-comment')
+    def add_comment(self, request, pk=None):
+        # Kiểm tra xem bài viết có tồn tại không
+        try:
+            post = Post.objects.get(id=pk)
+        except Post.DoesNotExist:
+            return Response({'error': 'Bài viết không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Chuẩn bị dữ liệu cho serializer, bỏ qua 'user' trong request.data
+        data = request.data.copy()
+        data['post'] = post.id  # Gán post_id từ URL vào dữ liệu
+
+        # Tạo serializer mà không truyền 'user' trực tiếp trong request data
+        serializer = self.serializer_class(data=data)
+
+        # Kiểm tra tính hợp lệ của dữ liệu
+        if serializer.is_valid():
+            # Lưu bình luận với người dùng từ `request.user`
+            serializer.save(user=request.user, post=post)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'], url_path='delete-comment')
+    def delete(self, request, pk=None):
+        try:
+            comment = Comment.objects.get(id=pk)
+            # Kiểm tra xem người dùng có quyền sửa đổi comment này không
+            if comment.user != request.user:
+                return Response({'error': 'Bạn không có quyền thực hiện thao tác này'},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            comment.active = False
+            comment.save()
+            return Response({'status': 'Comment đã bị ẩn'}, status=status.HTTP_200_OK)
+        except Comment.DoesNotExist:
+            return Response({'error': 'Comment không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
+
+class ReactionViewSet(viewsets.ModelViewSet):
+    queryset = Reaction.objects.all()
+    serializer_class = serializers.ReactionSerializer
+
+    # API lấy danh sách các phản ứng của mỗi bài viết
+    def list_reactions_by_post(self, request, post_id=None):
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return Response({"error": "Post not found"}, status=404)
+
+        reactions = Reaction.objects.filter(post=post)
+        serializer = self.get_serializer(reactions, many=True)
+        return Response(serializer.data)
