@@ -47,10 +47,6 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-# class UserProfile(BaseModel):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     note = RichTextField()
-
 class PostBaseModel(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     comment_blocked = models.BooleanField(default=False)
@@ -106,6 +102,39 @@ class Reaction(Interaction):
 
 class Comment(Interaction):
     comment = models.TextField()
+
+
+# Model cho Danh mục (Category)
+class Category(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+# Model cho Topic, mỗi Topic thuộc một Danh mục
+class Topic(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='topics')
+
+    def __str__(self):
+        return self.name
+
+
+# Model cho Bài viết (Post), kế thừa BaseModel, thuộc về một Topic và có tác giả là User với role Moderator
+class PetPost(BaseModel):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='posts')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': User.Role.MODERATOR}, related_name='moderator_posts')
+    title = models.CharField(max_length=200)
+    content = RichTextUploadingField(null=True)
+    image = CloudinaryField('image', null=True, blank=True)  # Ảnh của bài viết
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ['-created_date']
+
+
 
 
 class Notification(models.Model):

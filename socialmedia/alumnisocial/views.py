@@ -1,5 +1,6 @@
 from urllib import request
 
+from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from oauth2_provider.models import RefreshToken
@@ -363,3 +364,50 @@ class ReactionViewSet(viewsets.ModelViewSet):
         reactions = Reaction.objects.filter(post=post)
         serializer = self.get_serializer(reactions, many=True)
         return Response(serializer.data)
+
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = serializers.CategorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class TopicViewSet(viewsets.ModelViewSet):
+    queryset = Topic.objects.all()
+    serializer_class = serializers.TopicSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class PetPostViewSet(viewsets.ModelViewSet):
+    queryset = PetPost.objects.all()
+    serializer_class = serializers.PetPostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Ensure only Moderators can create posts
+        if self.request.user.role == User.Role.MODERATOR:
+            serializer.save(author=self.request.user)
+        else:
+            raise PermissionDenied("Only Moderators can create posts.")
+
+
+
+
+
+
+
+# class PetPostViewSet(viewsets.ModelViewSet):
+#     queryset = PetPost.objects.all()
+#     serializer_class = serializers.PetPostSerializer
+#     # permission_classes = [permissions.IsAuthenticated()]
+#     def list_pets_by_post(self, request, post_id=None):
+#         pets = PetPost.objects.filter(post=post_id)
+#         serializer = self.get_serializer(pets, many=True)
+#         return Response(serializer.data)

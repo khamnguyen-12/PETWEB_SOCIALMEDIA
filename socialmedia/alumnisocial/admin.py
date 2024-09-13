@@ -78,32 +78,4 @@ admin.site.register(Post, PostAdmin)
 
 
 
-# class GroupAdmin(admin.ModelAdmin):
-#     list_display = ['name']
-
-
-# class ChoiceInlineAdmin(admin.StackedInline):
-#     model = Choice
-#
-#
-# class QuestionInline(admin.StackedInline):
-#     model = Question
-
-
-# class QuestionAdmin(admin.ModelAdmin):
-#     list_display = ['id', 'type', 'title', 'survey_id', 'survey', ]
-#     inlines = [ChoiceInlineAdmin, ]
-#
-# class SurveyAdmin(admin.ModelAdmin):
-#     list_display = ['id', 'user', 'title']
-#     inlines = [QuestionInline, ]
-#
-#
-# class InvitationAdmin(admin.ModelAdmin):
-#     list_display = ['id', 'user', 'title', 'time', 'place']
-#
-#
-# class CommentAdmin(admin.ModelAdmin):
-#     list_display = ['id', 'user', 'post', 'comment', 'created_date', 'active']
-
 

@@ -22,7 +22,7 @@ urlpatterns = [
     path('stats/', admin.site.stats_view),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('', include('alumnisocial.urls')),
-    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    # path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('', TemplateView.as_view(template_name="home.html"), name='home'),
 
     re_path(r'^ckeditor', include('ckeditor_uploader.urls')),

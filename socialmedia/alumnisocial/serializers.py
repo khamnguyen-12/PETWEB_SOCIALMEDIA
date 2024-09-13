@@ -61,12 +61,7 @@ class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
         fields = ['video']
-# class VideoSerializer(serializers.ModelSerializer):
-#     video = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = Video
-#         fields = ['video']
+
 
 class PostSerializer(serializers.ModelSerializer):
     images = ImageSerializer(many=True, required=False)
@@ -129,3 +124,43 @@ class ReactionSerializer(serializers.ModelSerializer):
         model = Reaction
         fields = '__all__'
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
+
+class TopicSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='category')
+
+    class Meta:
+        model = Topic
+        fields = ['id', 'name', 'category', 'category_id']
+
+
+class PetPostSerializer(serializers.ModelSerializer):
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    topic = TopicSerializer(read_only=True)
+    topic_id = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all(), source='topic')
+
+    class Meta:
+        model = PetPost
+        fields = ['id', 'title', 'content', 'image', 'topic', 'topic_id', 'author']
+
+    def validate_author(self, value):
+        if value.role != User.Role.MODERATOR:
+            raise serializers.ValidationError("Only Moderators can create posts.")
+        return value
+
+
+# class PetPostSerializer(serializers.ModelSerializer):
+#     user = UserInteractionSerializer()
+#     class Meta:
+#         model = PetPost
+#         fields = '__all__'
+#         read_only_fields = ['id', 'created_date']
+#         extra_kwargs = {
+#             'created_date': {'read_only': True},
+#
+#         }
