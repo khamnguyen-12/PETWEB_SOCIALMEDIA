@@ -12,10 +12,6 @@ from django.db.models import Count
 from django.db.models.functions import TruncMonth, TruncQuarter, TruncYear
 
 
-# from alumnisocial.models import FriendShip, Group, AlumniProfile
-# from ckeditor.widgets import CKEditorWidget
-# from rest_framework import serializers
-
 class SocialNetworkAppAdminSite(admin.AdminSite):
     site_header = 'AlumniSocialNetwork'
 
@@ -71,6 +67,10 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'created_date', 'active', 'content', 'user']
     inlines = [ImagesInlineAdmin, ]
     form = PostForm
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = '__all__'
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Post, PostAdmin)

@@ -31,6 +31,7 @@ const MainContent = () => {
     const [selectedPost, setSelectedPost] = useState(null);
     const navigate = useNavigate();
     const [reactions, setReactions] = useState({});
+    const [commentCounts, setCommentCounts] = useState([]);
 
     const handleCommentClick = (postId) => {
         setSelectedPost(postId);
@@ -63,10 +64,39 @@ const MainContent = () => {
                 }, {});
 
                 setReactions(reactionsData);
+
+
+                // Fetch comment counts for the posts
+                const commentResponse = await authAPI().get(endpoints['list_comments'], {
+                    params: { post_ids: postIds }
+                });
+                console.log("Comments API response:", commentResponse); // Log raw API response
+                console.log("Comments data:", commentResponse.data); // Log extracted data
+
+                // Organize comments by post_id and extract count
+                const commentsData = commentResponse.data.reduce((acc, comment) => {
+                    const postId = comment.post;
+                    if (!acc[postId]) acc[postId] = 0;
+                    acc[postId] += 1;  // Increment comment count for each post
+                    return acc;
+                }, {});
+                setCommentCounts(commentsData);
+                console.log("Comments count data by post ID:", commentsData); // Log organized comment count data
+
+                // Attach commentCount to each post
+                const updatedPosts = postsData.map(post => ({
+                    ...post,
+                    commentCount: commentsData[post.id] || 0 // Attach the comment count
+                }));
+                console.log("Updated posts with comment counts:", updatedPosts); // Log updated posts with comment counts
+
+                setPosts(updatedPosts);
+
             } catch (error) {
                 console.error("Failed to fetch posts or reactions:", error);
             }
         };
+
 
         fetchPosts();
     }, []);
@@ -216,6 +246,7 @@ const MainContent = () => {
                 return 'Yêu thích'; // Văn bản mặc định
         }
     };
+
 
 
     return (
@@ -413,22 +444,29 @@ const MainContent = () => {
                                 </video>
                             ))}
 
-                            {/* Hiển thị phản ứng nếu có */}
-                            {reactions[post.id] && reactions[post.id].length > 0 && (
-                                <div css={styles.reactionsContainer}>
-                                    {/* Hiển thị các icon phản ứng */}
-                                    {reactions[post.id].map((reaction) => (
-                                        <div key={reaction.id} css={styles.reaction}>
-                                            <img src={getReactionIcon(reaction.type)} css={styles.reactionIcon} />
-                                        </div>
-                                    ))}
+                            <div css={styles.iconsAndCmtCount}>
+                                {/* Hiển thị phản ứng nếu có */}
+                                {reactions[post.id] && reactions[post.id].length > 0 && (
+                                    <div css={styles.reactionsContainer}>
+                                        {/* Hiển thị các icon phản ứng */}
+                                        {reactions[post.id].map((reaction) => (
+                                            console.log('Reaction:', reaction), // Log reaction data
 
-                                    {/* Đếm và hiển thị tổng số lượng phản ứng */}
-                                    <div css={styles.reactionCount}>
-                                        {reactions[post.id].length}
+                                            <div key={reaction.id} css={styles.reaction}>
+                                                <img src={getReactionIcon(reaction.type)} css={styles.reactionIcon} />
+                                            </div>
+                                        ))}
+
+                                        {/* Đếm và hiển thị tổng số lượng phản ứng */}
+                                        <div css={styles.reactionCount}>
+                                            {reactions[post.id].length}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                                <span>Có... bình luận</span>
+                            </div>
+
+
 
                             <div css={styles.postActions}>
                                 <div css={styles.actionGroup} onClick={() => handleReactPost(post.id, 3)}>
@@ -474,9 +512,10 @@ const MainContent = () => {
                                             />
                                         </div>
                                     </div>
+
+
                                 </div>
 
-                                {/* <div css={styles.actionGroup} onClick={() => handleCommentClick(selectedPost.id)}> */}
                                 <div css={styles.actionGroup} onClick={() => handleCommentClick(post.id)}>
                                     <img src={commentIcon} alt="Comment" css={styles.actionIcon} />
                                     <span>Bình luận</span>
@@ -492,10 +531,10 @@ const MainContent = () => {
                 </div>
             )}
         </div>
-    
-    
 
-);
+
+
+    );
 };
 
 const styles = {
@@ -633,6 +672,12 @@ const styles = {
         display: flex;
         gap: 10px;
     `,
+    iconsAndCmtCount: css`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    `,
+
     icon: css`
         width: 24px;
         height: 24px;
@@ -646,6 +691,8 @@ const styles = {
         flex-direction: column;
         gap: 10px;
     `,
+    commentCount: `
+            margin-left: auto`,
     modalOverlay: css`
         position: fixed;
         top: 0;

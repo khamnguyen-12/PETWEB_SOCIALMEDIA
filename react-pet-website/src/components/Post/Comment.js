@@ -78,6 +78,9 @@ const Comment = () => {
     const handleCommentChange = (event) => {
         setComment(event.target.value);
     };
+
+
+
     const handleCommentSubmit = async () => {
         if (!comment.trim()) return;
 

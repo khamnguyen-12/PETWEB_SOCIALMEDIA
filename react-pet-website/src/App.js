@@ -1,6 +1,6 @@
 import React, { useState, useReducer, useEffect } from 'react';
 import './App.css';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Navbar from "./components/Navbar/Navbar";
@@ -16,6 +16,7 @@ import { SnackbarProvider } from 'notistack';
 import Profile from './components/Account/Profile';
 import DetailPost from './components/Post/DetailPost';
 import Comment from './components/Post/Comment';
+import Moderator from './components/Account/Moderator';
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, cookie.load("user") || null);
@@ -30,6 +31,15 @@ const App = () => {
     }
   }, [user]);
 
+  const ProtectedRoute = ({ user, roleRequired, children}) => {
+    if (!user || user.role !== roleRequired) {
+      return <Navigate to="/" replace />
+    }
+
+    return children;
+  }
+
+
   return (
     <SnackbarProvider maxSnack={3}>
       <BrowserRouter>
@@ -41,7 +51,16 @@ const App = () => {
                   <Link to="/" style={buttonLinkStyles}>Trang chủ</Link>
                 </div>
                 <div style={buttonWrapperStyles}>
-                  <Link to="/profile" style={buttonLinkStyles}>Trang Cá nhân</Link>
+                  {user?.role === 2 ? (
+                    <Link to="/moderator" style={buttonLinkStyles}>Trang Cá nhân (Moderator)</Link>
+
+                  ) : (
+                    <Link to="/profile" style={buttonLinkStyles}>Trang Cá nhân</Link>
+
+                  )}
+
+
+
                 </div>
               </div>
             ) : (
@@ -49,13 +68,13 @@ const App = () => {
             )}
 
             <Routes>
-              <Route exact path='/' element={<MainContent />} /> 
+              <Route exact path='/' element={<MainContent />} />
               <Route
                 path='/login'
                 element={
                   <Login
                     setShowMainContent={setShowMainContent}
-                    setShowSidebar={setShowSidebar} 
+                    setShowSidebar={setShowSidebar}
                   />
                 }
               />
@@ -64,6 +83,17 @@ const App = () => {
               <Route path='/profile' element={<Profile />} />
               <Route path="/post/:id" element={<DetailPost />} />
               <Route path="/post/:id/comments" element={<Comment />} /> {/* Thêm Route cho Comment */}
+
+
+
+              <Route path='/moderator' element={
+                <ProtectedRoute user={user} roleRequired={2}>
+                
+                <Moderator />
+                </ProtectedRoute>
+                } 
+                
+                />
 
             </Routes>
             {!user && <Footer />}
@@ -90,12 +120,12 @@ const sidebarStyles = {
 
 const buttonWrapperStyles = {
   margin: '10px 0',
-  width: '100%', 
+  width: '100%',
   textAlign: 'center',
 };
 
 const buttonLinkStyles = {
-  display: 'block', 
+  display: 'block',
   width: '100%',
   padding: '10px 0',
   textDecoration: 'none',

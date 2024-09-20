@@ -13,11 +13,13 @@
     'newest_post' : '/posts/list-newest-posts/',
     'create_post' : '/posts/',
     'react_post': (id) => `/posts/${id}/reacts/`,
-    'list_react' : 'reacts',
+    'list_react' : '/reacts/',
     'detail_post' : (id) => `/posts/${id}/`,
     'list_comments' : (id) => `/comments/${id}/list-comments/`,
     'add_comment' : (id) => `/comments/${id}/add-comment/`,
     'delete_cmt' : (cmtId) => `/comments/${cmtId}/delete-comment/`,
+    'category' : '/categories/',
+    'topic' : '/topics/',
 }   
     
     export const authAPI = () => {

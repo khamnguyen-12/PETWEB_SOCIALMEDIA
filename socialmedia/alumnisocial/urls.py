@@ -6,9 +6,9 @@ from . import views
 
 r = routers.DefaultRouter()
 r.register('users', views.UserViewSet, basename='users')
-# r.register('posts', views.PostViewSet, basename='posts')
-# r.register('reacts', views.ReactionViewSet, basename='reacts')
-# r.register('comments', views.CommentViewSet, basename='comments')
+r.register('posts', views.PostViewSet, basename='posts')
+r.register('reacts', views.ReactionViewSet, basename='reacts')
+r.register('comments', views.CommentViewSet, basename='comments')
 r.register('petpost', views.PetPostViewSet, basename='petposts')
 r.register('categories', views.CategoryViewSet, basename='categories')
 r.register('topics', views.TopicViewSet, basename='topics')

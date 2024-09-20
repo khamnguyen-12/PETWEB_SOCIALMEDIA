@@ -112,6 +112,15 @@ const Login = ({ setShowSidebar }) => {
                     "type": "login",
                     "payload": userdata.data
                 });
+
+                if(userdata.data.role === 2 ){
+                    nav("/moderator");
+                } else{
+                    nav("/moderator");
+                }
+
+
+
                 setShowSidebar(true);
             } else {
                 handleLoginError(res.status);
