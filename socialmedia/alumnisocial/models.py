@@ -105,7 +105,7 @@ class Comment(Interaction):
 
 
 # Model cho Danh mục (Category)
-class Category(models.Model):
+class Category(BaseModel):
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):

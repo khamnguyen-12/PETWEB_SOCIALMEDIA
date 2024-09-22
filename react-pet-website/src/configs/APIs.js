@@ -20,6 +20,8 @@
     'delete_cmt' : (cmtId) => `/comments/${cmtId}/delete-comment/`,
     'category' : '/categories/',
     'topic' : '/topics/',
+    'function_category' : (id) => `/categories/${id}/deactivate/`,
+    'update_category' : (id) => `/categories/${id}/update-name/`
 }   
     
     export const authAPI = () => {

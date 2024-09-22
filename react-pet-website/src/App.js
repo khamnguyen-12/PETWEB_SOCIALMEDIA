@@ -31,7 +31,7 @@ const App = () => {
     }
   }, [user]);
 
-  const ProtectedRoute = ({ user, roleRequired, children}) => {
+  const ProtectedRoute = ({ user, roleRequired, children }) => {
     if (!user || user.role !== roleRequired) {
       return <Navigate to="/" replace />
     }
@@ -68,7 +68,12 @@ const App = () => {
             )}
 
             <Routes>
-              <Route exact path='/' element={<MainContent />} />
+              {/* Nếu người dùng chưa đăng nhập, điều hướng đến trang Login */}
+              <Route
+                exact
+                path='/'
+                element={user ? <MainContent /> : <Navigate to="/login" replace />}
+              />
               <Route
                 path='/login'
                 element={
@@ -88,12 +93,12 @@ const App = () => {
 
               <Route path='/moderator' element={
                 <ProtectedRoute user={user} roleRequired={2}>
-                
-                <Moderator />
+
+                  <Moderator />
                 </ProtectedRoute>
-                } 
-                
-                />
+              }
+
+              />
 
             </Routes>
             {!user && <Footer />}

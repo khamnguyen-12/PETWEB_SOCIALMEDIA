@@ -144,10 +144,10 @@ const Login = ({ setShowSidebar }) => {
             >
                 <div style={styles.headerText}>
                     Mạng xã hội hữu ích
-                    <br /> cho người yêu
+                    <br /> cho người yêu 
                     <span style={styles.typewriterText}>
                         {displayedText}
-                        <span style={styles.blinkingCursor}></span>
+                        <span style={styles.blinkingCursor}> </span>
                     </span>
                 </div>
                 <Row className="justify-content-md-end" style={{ width: '100%' }}>
@@ -351,6 +351,7 @@ const styles = {
         marginBottom: '20px',
     },
     headingText: {
+        paddingTop: '100px',
         fontSize: '32px',
         fontWeight: 'bold',
         color: '#333',

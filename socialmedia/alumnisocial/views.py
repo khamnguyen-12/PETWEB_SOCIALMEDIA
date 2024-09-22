@@ -375,6 +375,47 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
 
+    def get_queryset(self):
+        return Category.objects.filter(active=True)
+
+
+
+    @action(detail=True, methods=['patch'], url_path='update-name')
+    def update_name(self, request, pk=None):
+        # Lấy category dựa trên pk (primary key)
+        category = self.get_object()
+
+        # Lấy tên mới từ request data
+        new_name = request.data.get('name')
+
+        if new_name:
+            # Cập nhật tên và lưu lại
+            category.name = new_name
+            category.save()
+
+            # Trả về phản hồi thành công
+            return Response({
+                'success': True,
+                'message': 'Category name updated successfully',
+                'data': serializers.CategorySerializer(category).data
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'success': False,
+                'message': 'Name field is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+    # Custom PATCH method to set 'active' to False
+    @action(detail=True, methods=['patch'], url_path='deactivate')
+    def deactivate(self, request, pk=None):
+        try:
+            category = self.get_object()
+            category.active = False
+            category.save()
+            return Response({'status': 'Category deactivated successfully'}, status=status.HTTP_200_OK)
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class TopicViewSet(viewsets.ModelViewSet):
     queryset = Topic.objects.all()

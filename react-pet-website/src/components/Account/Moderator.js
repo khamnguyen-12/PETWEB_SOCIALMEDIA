@@ -103,6 +103,98 @@ const Moderator = () => {
         }
     }
 
+    const loadCategories = async () => {
+        try {
+            // Đảm bảo bạn đang sử dụng đúng endpoint cho categories
+            const response = await authAPI().get(endpoints['categories']);
+
+            // Kiểm tra phản hồi có phải là mảng hay không
+            if (response.status === 200 && Array.isArray(response.data)) {
+                setCategories(response.data);
+            } else {
+                // Nếu không phải là mảng, ghi lại phản hồi để kiểm tra lỗi
+                console.error('Categories is not an array:', response.data);
+                setCategories([]); // Đặt thành mảng trống nếu không phải là mảng
+            }
+        } catch (error) {
+            // Xử lý lỗi nếu có
+            console.error('Error loading categories:', error);
+            setCategories([]); // Đặt thành mảng trống nếu có lỗi
+        }
+    };
+
+    // Gọi loadCategories khi component được tải
+    useEffect(() => {
+        loadCategories();
+    }, []);
+ 
+
+    // Gọi loadCategories khi component được tải
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const editCategory = async (id) => {
+        // Hiển thị hộp thoại cho người dùng nhập tên mới
+        const newName = prompt("Nhập tên mới cho Category:");
+
+        if (newName) {
+            try {
+                // Gọi API để cập nhật tên category
+                const response = await authAPI().patch(endpoints['update_category'](id), {
+                    name: newName
+                });
+
+                if (response.status === 200) {
+                    console.log('Category name updated successfully', response.data);
+                    // Cập nhật lại UI hoặc danh sách categories sau khi sửa tên thành công
+                    // Có thể gọi hàm load lại danh sách categories nếu cần
+                    loadCategories();
+                } else {
+                    console.error('Failed to update category name. Status code:', response.status);
+                    alert('Cập nhật tên không thành công. Vui lòng thử lại.');
+                }
+            } catch (error) {
+                // Xử lý lỗi
+                console.error('Error updating category name:', error);
+                alert('Có lỗi xảy ra khi cập nhật tên Category. Vui lòng thử lại.');
+            }
+        } else {
+            console.log("Người dùng đã hủy thay đổi.");
+        }
+    };
+
+
+    const deleteCategory = async (id) => {
+        try {
+            // Gọi API để vô hiệu hóa category bằng phương thức PATCH
+            const response = await authAPI().patch(endpoints['function_category'](id), {
+                active: false
+            });
+
+            // Kiểm tra phản hồi
+            if (response.status === 200 || response.status === 204) {
+                console.log('Category deactivated successfully', response.data);
+
+                // Cập nhật lại danh sách category (giả sử có hàm fetchCategories để cập nhật danh sách)
+                await fetchCategories();
+
+                // Thông báo thành công
+                alert('Category deactivated successfully');
+            } else {
+                console.error('Failed to deactivate category. Status code:', response.status);
+                alert(`Failed to deactivate category. Status code: ${response.status}`);
+            }
+        } catch (error) {
+            // Xử lý lỗi
+            console.error('Error deactivating category:', error);
+            alert('Error deactivating category: ' + error.message);
+        }
+    };
+
+
+
+
     useEffect(() => {
         if (showAlert) {
             const timer = setTimeout(() => {
@@ -140,7 +232,7 @@ const Moderator = () => {
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = css.addButtonHover.backgroundColor}
                                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
                                         onClick={() => setShowModal(true)}
-                                        
+
                                     >
                                         Thêm Category
                                     </Button>
@@ -153,7 +245,23 @@ const Moderator = () => {
                                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = css.categoryItemHover.backgroundColor}
                                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
                                         >
-                                            {category.name}
+                                            <div style={css.categoryName}>
+                                                {category.name}
+                                                <div style={css.buttonGroup}>
+                                                    <button
+                                                        style={css.editButton}
+                                                        onClick={() => editCategory(category.id)}
+                                                    >
+                                                        Sửa
+                                                    </button>
+                                                    <button
+                                                        style={css.deleteButton}
+                                                        onClick={() => deleteCategory(category.id)}
+                                                    >
+                                                        Xóa
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -264,40 +372,76 @@ const css = {
         borderRadius: '10px',
         padding: '20px',
     },
+    editButton: {
+        padding: '5px 10px',
+        backgroundColor: '#4CAF50', // Màu xanh cho nút sửa
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+    },
 
+    deleteButton: {
+        padding: '5px 10px',
+        backgroundColor: '#f44336', // Màu đỏ cho nút xóa
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+    },
     categoryList: {
         listStyle: 'none',
         padding: 0,
         margin: '20px 0',
     },
 
+
     categoryItem: {
-        padding: '10px 15px',
+        padding: '10px 20px',
+        display: 'flex',
+        justifyContent: 'space-between', // Giúp các nút nằm cạnh nhau
+        alignItems: 'center',
         backgroundColor: '#fff',
         marginBottom: '10px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+        borderRadius: '8px', // Bo góc thẻ category
+        transition: 'box-shadow 0.3s ease-in-out', // Hiệu ứng mượt mà khi hover
+    },
+
+    buttonGroup: {
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        transition: 'transform 0.2s ease-in-out',
+        gap: '10px', // Khoảng cách giữa nút Sửa và Xóa
     },
 
     categoryItemHover: {
-        transform: 'scale(1.02)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // Shadow nhẹ
+
     },
 
     addButton: {
-        width: 'auto', // Change from 100% to auto
-        minWidth: '120px', // Optional: set a minimum width
+        width: 'auto',
+        minWidth: '120px',
         backgroundColor: '#28a745', // Green color
         borderColor: '#28a745',
         borderRadius: '4px',
-        padding: '10px 15px', // Adjust padding for a better look
+        padding: '10px 15px',
         fontWeight: 'bold',
         marginTop: '10px',
     },
+    categoryName: {
+        padding: '10px 20px', // Khoảng cách giữa text và border
+        backgroundColor: '#fff', // Màu nền cho category
+        borderRadius: '8px', // Bo tròn góc
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Hiệu ứng shadow nhẹ
+        transition: 'background-color 0.3s ease-in-out', // Hiệu ứng mượt mà khi hover
+        display: 'flex', // Đặt flexbox để căn chỉnh các phần tử
+        justifyContent: 'space-between', // Tạo khoảng cách giữa tên và nút
+        alignItems: 'center', // Căn giữa theo chiều dọc
+        width: '100%', // Kéo dài ra toàn chiều ngang
+    },
 
+    categoryNameHover: {
+        backgroundColor: '#f0f0f0', // Màu nền khi hover
+    },
     addButtonHover: {
         backgroundColor: '#218838',
     },
