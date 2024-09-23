@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Modal, Form, Card, Button, Alert } from 'react-bootstrap';
+import { Modal, Form, Card, Button, Alert, Spinner } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,6 +25,13 @@ const Moderator = () => {
     const [alertMessage, setAlertMessage] = useState(''); // State for displaying success/failure message
     const [alertVariant, setAlertVariant] = useState(''); // State to control alert type (success or danger)
     const [showAlert, setShowAlert] = useState(false); // State to control the visibility of the alert
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(''); // Trạng thái để lưu category được chọn
+    const [isLoadingCategories, setIsLoadingCategories] = useState(true); // Trạng thái loading cho combobox
+
+    const [showTopicModal, setShowTopicModal] = useState(false);
+    const [newTopic, setNewTopic] = useState('');
+
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -40,7 +47,11 @@ const Moderator = () => {
         fetchUser();
     }, []);
 
-
+    const fetchDataWithLoading = async (fetchFunction) => {
+        setIsLoading(true);
+        await fetchFunction(); // Thực thi hàm được truyền vào
+        setIsLoading(false);
+    };
 
     const handleLogout = () => {
         cookie.remove('user');
@@ -103,31 +114,27 @@ const Moderator = () => {
         }
     }
 
+    const editTopic = async () => {
+
+    }
+
+    const deleteTopic = async () => {
+
+    }
+
+
     const loadCategories = async () => {
         try {
-            // Đảm bảo bạn đang sử dụng đúng endpoint cho categories
-            const response = await authAPI().get(endpoints['categories']);
-
-            // Kiểm tra phản hồi có phải là mảng hay không
-            if (response.status === 200 && Array.isArray(response.data)) {
-                setCategories(response.data);
-            } else {
-                // Nếu không phải là mảng, ghi lại phản hồi để kiểm tra lỗi
-                console.error('Categories is not an array:', response.data);
-                setCategories([]); // Đặt thành mảng trống nếu không phải là mảng
-            }
+            const response = await authAPI().get(endpoints['category']);
+            const data = response.data;
+            setCategories(data); // Lưu dữ liệu vào state
+            setShowCategories(true); // Hiển thị danh mục sau khi lấy dữ liệu
+            setActiveSection('categories'); // Hiển thị phần categories
+            console.log(data);
         } catch (error) {
-            // Xử lý lỗi nếu có
-            console.error('Error loading categories:', error);
-            setCategories([]); // Đặt thành mảng trống nếu có lỗi
+            console.error('Error fetching categories:', error);
         }
     };
-
-    // Gọi loadCategories khi component được tải
-    useEffect(() => {
-        loadCategories();
-    }, []);
- 
 
     // Gọi loadCategories khi component được tải
     useEffect(() => {
@@ -192,17 +199,53 @@ const Moderator = () => {
         }
     };
 
+    // Hiển thị modal khi nút "Thêm Topic" được nhấn
+    const handleAddTopicClick = () => {
+
+        setShowTopicModal(true);
+        setNewTopic(''); // Đặt lại giá trị tên topic
+        setSelectedCategory(''); // Đặt lại giá trị category đã chọn
+        setError(''); // Xóa lỗi trước khi mở modal
+        // setShowTopicModal(true);
+        // fetchCategories(); // Lấy danh sách categories khi mở modal
+    };
 
 
-
-    useEffect(() => {
-        if (showAlert) {
-            const timer = setTimeout(() => {
-                setShowAlert(false); // Hide the alert after 2 seconds
-            }, 2000); // Set the duration to 2 seconds
-            return () => clearTimeout(timer); // Cleanup the timer on component unmount
+    // Hàm thêm topic
+    const addTopic = async (e) => {
+        e.preventDefault();
+        if (newTopic.trim() === '' || !selectedCategory) {
+            setError('Bạn cần nhập tên topic và chọn category.');
+            return;
         }
-    }, [showAlert]);
+
+        try {
+            // const response = await authAPI().post(endpoints['topic'], { name: newTopic, category: selectedCategory });
+
+            const response = await authAPI().post(endpoints['topic'], { name: newTopic, category_id: selectedCategory });
+            setTopic((prevTopics) => [...prevTopics, response.data]); // Cập nhật danh sách topic
+            setNewTopic('');
+            setSelectedCategory('');
+            setShowTopicModal(false);
+            setAlertMessage('Topic added successfully!');
+            setAlertVariant('success');
+            setShowAlert(true);
+        } catch (error) {
+            console.error('Error adding topic:', error);
+            setAlertMessage('Failed to add topic. Please try again.');
+            setAlertVariant('danger');
+            setShowAlert(true);
+        }
+    };
+
+    // useEffect(() => {
+    //     if (showAlert) {
+    //         const timer = setTimeout(() => {
+    //             setShowAlert(false); // Hide the alert after 2 seconds
+    //         }, 2000); // Set the duration to 2 seconds
+    //         return () => clearTimeout(timer); // Cleanup the timer on component unmount
+    //     }
+    // }, [showAlert]);
 
     return (
         <div style={css.container}>
@@ -269,19 +312,85 @@ const Moderator = () => {
                             </div>
                         )}
 
-
                         {activeSection === 'topics' && (
                             <>
-                                <h3 className="mt-4">Topics</h3>
+
+                                <div style={css.headerRow}>
+                                    <h3 className="mt-4">Topics</h3>
+                                    <Button
+                                        variant="success"
+                                        style={css.addButton}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = css.addButtonHover.backgroundColor}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
+                                        onClick={handleAddTopicClick}
+
+                                    >
+                                        Thêm Topic
+                                    </Button>
+
+                                    <Modal show={showTopicModal} onHide={() => setShowTopicModal(false)}>
+                                        <Modal.Header closeButton>
+                                            <Modal.Title>Nhập thông tin topic mới</Modal.Title>
+                                        </Modal.Header>
+                                        <Modal.Body>
+                                            <Form onSubmit={addTopic}>
+                                                <Form.Group>
+                                                    <Form.Label>Tên Topic</Form.Label>
+                                                    <Form.Control
+                                                        type="text"
+                                                        value={newTopic}
+                                                        onChange={(e) => setNewTopic(e.target.value)}
+                                                    />
+                                                </Form.Group>
+                                                <Form.Group>
+                                                    <Form.Label>Chọn Category</Form.Label>
+                                                    <Form.Control as="select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                                                        <option value="">-- Chọn category --</option>
+                                                        {categories.map((category) => (
+                                                            <option key={category.id} value={category.id}>
+                                                                {category.name}
+                                                            </option>
+                                                        ))}
+                                                    </Form.Control>
+                                                </Form.Group>
+                                                {error && <small className="text-danger">{error}</small>}
+                                                <Button variant="primary" type="submit" className="mt-3">
+                                                    Thêm
+                                                </Button>
+                                            </Form>
+                                        </Modal.Body>
+                                        <Modal.Footer>
+                                            <Button variant="secondary" onClick={() => setShowTopicModal(false)}>Close</Button>
+                                        </Modal.Footer>
+
+                                    </Modal>
+                                </div>
                                 <ul className="list-group">
                                     {topics.map(topic => (
-                                        <li key={topic.id} className="list-group-item">
-                                            {topic.name} - Danh mục: {topic.category?.name || 'No Category'}
+                                        <li key={topic.id} className="list-group-item" style={css.categoryItem}>
+                                            <div style={css.categoryName}>
+                                                {topic.name} - Danh mục: {topic.category?.name || 'No Category'}
+                                                <div style={css.buttonGroup}>
+                                                    <button
+                                                        style={css.editButton}
+                                                        onClick={() => editTopic(topic.id)}
+                                                    >
+                                                        Sửa
+                                                    </button>
+                                                    <button
+                                                        style={css.deleteButton}
+                                                        onClick={() => deleteTopic(topic.id)}
+                                                    >
+                                                        Xóa
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
                             </>
                         )}
+
                     </Card.Body>
                 </Card>
             </div>
@@ -291,17 +400,40 @@ const Moderator = () => {
                 <h4>Actions</h4>
                 <Button
                     variant="primary"
-                    onClick={fetchCategories}
+                    onClick={() => fetchDataWithLoading(fetchCategories)} // Gọi hàm dùng chung với fetchCategories
+                    disabled={isLoading}
                     style={css.button}
                 >
-                    Show Categories
+                    {isLoading ? (
+                        <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                        />
+                    ) : (
+                        'Show Categories'
+                    )}
                 </Button>
+
                 <Button
                     variant="primary"
-                    onClick={fetchTopics}
+                    onClick={() => fetchDataWithLoading(fetchTopics)} // Gọi hàm dùng chung với fetchTopics
+                    disabled={isLoading}
                     style={css.button}
                 >
-                    Show Topics
+                    {isLoading ? (
+                        <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                        />
+                    ) : (
+                        'Show Topics'
+                    )}
                 </Button>
                 <Button
                     variant="danger"
@@ -417,16 +549,27 @@ const css = {
 
     },
 
+    headerRow: {
+        display: 'flex',
+        justifyContent: 'space-between', // Căn đều hai thẻ ra hai đầu
+        alignItems: 'center', // Căn giữa theo chiều dọc
+        marginBottom: '20px', // Khoảng cách dưới
+    },
     addButton: {
         width: 'auto',
         minWidth: '120px',
-        backgroundColor: '#28a745', // Green color
+        backgroundColor: '#28a745',
         borderColor: '#28a745',
         borderRadius: '4px',
         padding: '10px 15px',
         fontWeight: 'bold',
         marginTop: '10px',
     },
+
+    addButtonHover: {
+        backgroundColor: '#218838',
+    },
+
     categoryName: {
         padding: '10px 20px', // Khoảng cách giữa text và border
         backgroundColor: '#fff', // Màu nền cho category
