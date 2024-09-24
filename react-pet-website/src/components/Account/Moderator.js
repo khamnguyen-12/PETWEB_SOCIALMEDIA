@@ -43,9 +43,20 @@ const Moderator = () => {
                 console.error('Error fetching user data:', error);
             }
         };
+        triggerAlert('Topic added successfully!');
 
         fetchUser();
     }, []);
+
+    const triggerAlert = (message) => {
+        setAlertMessage(message); // Set the alert message
+        setShowAlert(true); // Show the alert
+
+        // Hide alert after 2 seconds
+        setTimeout(() => {
+            setShowAlert(false); // Hide alert after 2 seconds
+        }, 2000);
+    };
 
     const fetchDataWithLoading = async (fetchFunction) => {
         setIsLoading(true);
@@ -77,6 +88,10 @@ const Moderator = () => {
             setAlertMessage('Category added successfully!'); // Set success message
             setAlertVariant('success'); // Set alert to success type
             setShowAlert(true); // Show alert
+
+            setTimeout(() => {
+                setShowAlert(false); // Hide alert after 3 seconds
+            }, 3000); // 3000 milliseconds = 3 seconds
         } catch (error) {
             console.error('Error adding category:', error);
             setAlertMessage('Failed to add category. Please try again.'); // Set error message
@@ -112,14 +127,6 @@ const Moderator = () => {
         } catch (error) {
             console.error('Error fetch Topic:', error);
         }
-    }
-
-    const editTopic = async () => {
-
-    }
-
-    const deleteTopic = async () => {
-
     }
 
 
@@ -170,6 +177,53 @@ const Moderator = () => {
             console.log("Người dùng đã hủy thay đổi.");
         }
     };
+
+    const editTopic = async (id) => {
+        // Hiển thị hộp thoại cho người dùng nhập tên mới
+        const newName = prompt("Nhập tên mới cho Topic:");
+
+        if (newName) {
+            try {
+                // Gọi API để cập nhật tên category
+                const response = await authAPI().patch(endpoints['edit_topic'](id), {
+                    name: newName
+                });
+
+                if (response.status === 200) {
+                    console.log('Category name updated successfully', response.data);
+                    // Cập nhật lại UI hoặc danh sách categories sau khi sửa tên thành công
+                    // Có thể gọi hàm load lại danh sách categories nếu cần
+                    fetchTopics();
+                } else {
+                    console.error('Failed to update category name. Status code:', response.status);
+                    alert('Cập nhật tên không thành công. Vui lòng thử lại.');
+                }
+            } catch (error) {
+                // Xử lý lỗi
+                console.error('Error updating category name:', error);
+                alert('Có lỗi xảy ra khi cập nhật tên Category. Vui lòng thử lại.');
+            }
+        } else {
+            console.log("Người dùng đã hủy thay đổi.");
+        }
+    }
+
+    const deleteTopic = async (id) => {
+        try {
+            // Make the DELETE request to deactivate the topic
+            const response = await authAPI().patch(endpoints['deactivate_topic'](id), {
+                active: false
+            });
+
+            if (response.status === 200) {
+                fetchTopics();
+                triggerAlert('Topic deactivated successfully!');
+            }
+        } catch (error) {
+            console.error('Error deactivating topic:', error);
+            triggerAlert('Failed to deactivate topic.');
+        }
+    }
 
 
     const deleteCategory = async (id) => {
@@ -230,6 +284,9 @@ const Moderator = () => {
             setAlertMessage('Topic added successfully!');
             setAlertVariant('success');
             setShowAlert(true);
+            setTimeout(() => {
+                setShowAlert(false); // Hide alert after 3 seconds
+            }, 3000); // 3000 milliseconds = 3 seconds
         } catch (error) {
             console.error('Error adding topic:', error);
             setAlertMessage('Failed to add topic. Please try again.');
@@ -237,15 +294,6 @@ const Moderator = () => {
             setShowAlert(true);
         }
     };
-
-    // useEffect(() => {
-    //     if (showAlert) {
-    //         const timer = setTimeout(() => {
-    //             setShowAlert(false); // Hide the alert after 2 seconds
-    //         }, 2000); // Set the duration to 2 seconds
-    //         return () => clearTimeout(timer); // Cleanup the timer on component unmount
-    //     }
-    // }, [showAlert]);
 
     return (
         <div style={css.container}>

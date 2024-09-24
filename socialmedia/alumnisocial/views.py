@@ -424,6 +424,17 @@ class TopicViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
+    def get_queryset(self):
+        return Topic.objects.filter(active=True)
+    @action(detail=True, methods=['patch'], url_path='deactivate')
+    def deactivate(self, request, pk=None):
+        try:
+            topic = self.get_object()
+            topic.active = False
+            topic.save()
+            return Response({'status': 'Topic deactivated successfully'}, status=status.HTTP_200_OK)
+        except Topic.DoesNotExist:
+            return Response({'error': 'Topic not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class PetPostViewSet(viewsets.ModelViewSet):

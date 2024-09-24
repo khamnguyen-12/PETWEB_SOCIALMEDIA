@@ -112,7 +112,7 @@ class Category(BaseModel):
         return self.name
 
 # Model cho Topic, mỗi Topic thuộc một Danh mục
-class Topic(models.Model):
+class Topic(BaseModel):
     name = models.CharField(max_length=100)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='topics')
 

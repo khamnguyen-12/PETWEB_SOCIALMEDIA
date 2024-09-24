@@ -21,7 +21,9 @@
     'category' : '/categories/',
     'topic' : '/topics/',
     'function_category' : (id) => `/categories/${id}/deactivate/`,
-    'update_category' : (id) => `/categories/${id}/update-name/`
+    'update_category' : (id) => `/categories/${id}/update-name/`,
+    'deactivate_topic' : (id) => `/topics/${id}/deactivate/`,
+    'edit_topic' : (id) => `/topics/${id}/`,
 }   
     
     export const authAPI = () => {
