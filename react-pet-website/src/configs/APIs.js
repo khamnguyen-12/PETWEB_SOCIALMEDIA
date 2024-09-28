@@ -24,6 +24,7 @@
     'update_category' : (id) => `/categories/${id}/update-name/`,
     'deactivate_topic' : (id) => `/topics/${id}/deactivate/`,
     'edit_topic' : (id) => `/topics/${id}/`,
+    'petpost' :'/petpost/',
 }   
     
     export const authAPI = () => {

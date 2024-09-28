@@ -31,6 +31,7 @@ const Moderator = () => {
 
     const [showTopicModal, setShowTopicModal] = useState(false);
     const [newTopic, setNewTopic] = useState('');
+    const [petPosts, setPetPosts] = useState([]);  // Add state to store pet posts
 
 
     useEffect(() => {
@@ -129,6 +130,27 @@ const Moderator = () => {
         }
     }
 
+    // Function to fetch pet posts
+    const fetchPetpost = async () => {
+        try {
+            setIsLoading(true);
+            const response = await authAPI().get(endpoints['petpost']);
+
+            console.log("APi success: ", response)
+            const data = response.data;
+
+
+            setActiveSection('petpost');
+            console.log("Data response: ", data)
+            setPetPosts(data); // Store the fetched pet posts in state
+        } catch (error) {
+            setError('Error fetching pet posts');
+            console.error("Error occurred during API call:", error);
+
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const loadCategories = async () => {
         try {
@@ -295,6 +317,9 @@ const Moderator = () => {
         }
     };
 
+
+
+
     return (
         <div style={css.container}>
             {/* Phần hiển thị nội dung chính bên trái */}
@@ -362,7 +387,6 @@ const Moderator = () => {
 
                         {activeSection === 'topics' && (
                             <>
-
                                 <div style={css.headerRow}>
                                     <h3 className="mt-4">Topics</h3>
                                     <Button
@@ -371,7 +395,6 @@ const Moderator = () => {
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = css.addButtonHover.backgroundColor}
                                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
                                         onClick={handleAddTopicClick}
-
                                     >
                                         Thêm Topic
                                     </Button>
@@ -439,6 +462,39 @@ const Moderator = () => {
                             </>
                         )}
 
+
+                        {activeSection === 'petpost' && (
+                            <>
+                                <div style={css.petPostsSection}>
+                                    <h3 className="mt-4" style={css.petPostsHeader}>Pet Posts</h3>
+                                    {/* Display fetched pet posts */}
+                                    {petPosts.length > 0 ? (
+                                        <ul className="list-group mt-4" style={css.petPostList}>
+                                            {petPosts.map((post) => {
+                                                // Kiểm tra nếu post.image là null hoặc không có giá trị, xử lý đường dẫn ảnh
+                                                const imageUrl = post.image
+                                                    ? post.image.startsWith('http')
+                                                        ? post.image
+                                                        : `https://res.cloudinary.com/dp2lb0arb/${post.image}`
+                                                    : '/image/upload/https://vuipet.com/wp-content/uploads/2021/05/cho-husky.jpg'; // Đường dẫn đến ảnh mặc định
+
+                                                return (
+                                                    <li key={post.id} className="list-group-item" style={css.petPostItem}>
+                                                        {/* Bỏ qua tiêu đề và nội dung để chỉ hiển thị tên topic và danh mục */}
+                                                        <small>Topic: {post.topic.name} - Category: {post.topic.category.name}</small>
+                                                        {/* <img src={imageUrl}></img> */}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    ) : (
+                                        <p>No pet posts available</p>
+                                    )}
+                                </div>
+                            </>
+                        )}
+
+
                     </Card.Body>
                 </Card>
             </div>
@@ -483,6 +539,30 @@ const Moderator = () => {
                         'Show Topics'
                     )}
                 </Button>
+
+
+                <Button
+                    variant="primary"
+                    onClick={() => fetchDataWithLoading(fetchPetpost)} // Gọi hàm dùng chung với fetchTopics
+                    disabled={isLoading}
+                    style={css.button}
+                >
+                    {isLoading ? (
+                        <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                        />
+                    ) : (
+                        'Show PetPost'
+                    )}
+                </Button>
+
+
+
+
                 <Button
                     variant="danger"
                     onClick={handleLogout}
@@ -527,6 +607,34 @@ const Moderator = () => {
 
 // Hàm chứa CSS
 const css = {
+
+    petPostsSection: {
+        display:'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        padding: '20px',
+    },
+
+    petPostsHeader: {
+        alignSeft: 'flex-start',
+        marginBottom: '10px',
+    },
+
+    petPostsList: {
+        width: '100%', // Đảm bảo danh sách rộng 100% vùng hiển thị
+        marginTop: '10px',
+        listStyleType: 'none', // Loại bỏ ký hiệu gạch đầu dòng của ul
+        padding: 0, // Xóa padding mặc định của ul
+    },
+    petPostItem: {
+        padding: '10px 20px', // Khoảng cách trong của từng mục
+        marginBottom: '10px', // Khoảng cách giữa các mục
+        backgroundColor: '#fff', // Màu nền cho item
+        borderRadius: '8px', // Bo góc
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Hiệu ứng đổ bóng nhẹ
+        fontWeight: '70px',
+
+    },
     container: {
         display: 'flex',
         flexDirection: 'row',
