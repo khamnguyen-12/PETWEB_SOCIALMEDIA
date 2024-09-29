@@ -32,7 +32,7 @@ const Moderator = () => {
     const [showTopicModal, setShowTopicModal] = useState(false);
     const [newTopic, setNewTopic] = useState('');
     const [petPosts, setPetPosts] = useState([]);  // Add state to store pet posts
-
+    const [petPostId, setPetPostId] = useState([]);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -247,6 +247,31 @@ const Moderator = () => {
         }
     }
 
+    const deletePetPost = async (id) => {
+        try {
+            const res = await authAPI().patch(endpoints['delete_petpost'](id), {
+                active: false
+            });
+
+            // Kiểm tra phản hồi
+            if (res.status === 200 || res.status === 204) {
+                console.log('Petpost deactivated successfully', res.data);
+
+                // Cập nhật lại danh sách category (giả sử có hàm fetchCategories để cập nhật danh sách)
+                await fetchPetpost();
+
+                // Thông báo thành công
+                alert('PetPost deactivated successfully');
+            } else {
+                console.error('Failed to deactivate Petpost. Status code:', res.status);
+                alert(`Failed to deactivate category. Status code: ${res.status}`);
+            }
+        } catch (error) {
+            console.error("Error orcur when fetch petpost", error);
+            alert('Error deactivating petpost: ' + error.message);
+
+        }
+    }
 
     const deleteCategory = async (id) => {
         try {
@@ -483,6 +508,12 @@ const Moderator = () => {
                                                         {/* Bỏ qua tiêu đề và nội dung để chỉ hiển thị tên topic và danh mục */}
                                                         <small>Topic: {post.topic.name} - Category: {post.topic.category.name}</small>
                                                         {/* <img src={imageUrl}></img> */}
+
+
+                                                        <Button style={css.petPostButton}>Sửa</Button>
+                                                        <Button style={css.petPostButton} onClick={() => deletePetPost(petPostId)} >Xóa</Button>
+
+
                                                     </li>
                                                 );
                                             })}
@@ -609,7 +640,7 @@ const Moderator = () => {
 const css = {
 
     petPostsSection: {
-        display:'flex',
+        display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '20px',
@@ -620,9 +651,9 @@ const css = {
         marginBottom: '10px',
     },
 
-    petPostsList: {
+    petPostList: {
         width: '100%', // Đảm bảo danh sách rộng 100% vùng hiển thị
-        marginTop: '10px',
+        marginTop: '5px',
         listStyleType: 'none', // Loại bỏ ký hiệu gạch đầu dòng của ul
         padding: 0, // Xóa padding mặc định của ul
     },
@@ -633,13 +664,15 @@ const css = {
         borderRadius: '8px', // Bo góc
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Hiệu ứng đổ bóng nhẹ
         fontWeight: '70px',
-
+        flexGrow: 1,
     },
     container: {
         display: 'flex',
         flexDirection: 'row',
         height: '100vh',
     },
+
+
 
     sidebar: {
         backgroundColor: '#f8f9fa',
@@ -655,6 +688,11 @@ const css = {
         minHeight: '100vh',
     },
 
+    petPostButton:
+    {
+        padding: '5px',
+        margin: '5px',
+    },
     card: {
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         borderRadius: '10px',

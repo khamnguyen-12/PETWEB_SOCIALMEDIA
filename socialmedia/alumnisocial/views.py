@@ -417,6 +417,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         except Category.DoesNotExist:
             return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
 
+
 class TopicViewSet(viewsets.ModelViewSet):
     queryset = Topic.objects.all()
     serializer_class = serializers.TopicSerializer
@@ -424,8 +425,10 @@ class TopicViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
+
     def get_queryset(self):
         return Topic.objects.filter(active=True)
+
     @action(detail=True, methods=['patch'], url_path='deactivate')
     def deactivate(self, request, pk=None):
         try:
@@ -449,17 +452,15 @@ class PetPostViewSet(viewsets.ModelViewSet):
         else:
             raise PermissionDenied("Only Moderators can create posts.")
 
+    def get_queryset(self):
+        return PetPost.objects.filter(active=True)
 
-
-
-
-
-
-# class PetPostViewSet(viewsets.ModelViewSet):
-#     queryset = PetPost.objects.all()
-#     serializer_class = serializers.PetPostSerializer
-#     # permission_classes = [permissions.IsAuthenticated()]
-#     def list_pets_by_post(self, request, post_id=None):
-#         pets = PetPost.objects.filter(post=post_id)
-#         serializer = self.get_serializer(pets, many=True)
-#         return Response(serializer.data)
+    @action(detail=True, methods=['patch'], url_path='deactive-petpost')
+    def deactivate(self, request, pk=None):
+        try:
+            pet_post = self.get_object()
+            pet_post.active = False
+            pet_post.save()
+            return Response("PetPost deactivated successfully", status=status.HTTP_200_OK)
+        except PetPost.DoesNotExist:
+            return Response({"error": "PetPost not found"}, status=status.HTTP_404_NOT_FOUND)
