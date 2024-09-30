@@ -32,7 +32,7 @@ const Moderator = () => {
     const [showTopicModal, setShowTopicModal] = useState(false);
     const [newTopic, setNewTopic] = useState('');
     const [petPosts, setPetPosts] = useState([]);  // Add state to store pet posts
-    const [petPostId, setPetPostId] = useState([]);
+    const [showWelcome, setShowWelcome] = useState(true);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -167,7 +167,9 @@ const Moderator = () => {
 
     // Gọi loadCategories khi component được tải
     useEffect(() => {
+        setShowWelcome(true);
         loadCategories();
+
     }, []);
 
     const editCategory = async (id) => {
@@ -249,15 +251,14 @@ const Moderator = () => {
 
     const deletePetPost = async (id) => {
         try {
-            const res = await authAPI().patch(endpoints['delete_petpost'](id), {
-                active: false
-            });
+            console.log("API URL: ", endpoints['delete_petpost'](id)); // In ra URL để kiểm tra
+            const res = await authAPI().patch(endpoints['delete_petpost'](id));
 
             // Kiểm tra phản hồi
             if (res.status === 200 || res.status === 204) {
                 console.log('Petpost deactivated successfully', res.data);
 
-                // Cập nhật lại danh sách category (giả sử có hàm fetchCategories để cập nhật danh sách)
+                // Cập nhật lại danh sách petpost
                 await fetchPetpost();
 
                 // Thông báo thành công
@@ -267,11 +268,11 @@ const Moderator = () => {
                 alert(`Failed to deactivate category. Status code: ${res.status}`);
             }
         } catch (error) {
-            console.error("Error orcur when fetch petpost", error);
+            console.error("Error occurred when fetching petpost", error);
             alert('Error deactivating petpost: ' + error.message);
-
         }
-    }
+    };
+
 
     const deleteCategory = async (id) => {
         try {
@@ -347,10 +348,36 @@ const Moderator = () => {
 
     return (
         <div style={css.container}>
+
+            <Modal show={showWelcome} onHide={() => setShowWelcome(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>MỪNG TRỞ LẠI</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    HAVE A GOOD DAY MODERATOR                           
+                    <span style={{ fontWeight: 'bold', fontSize: '1.3em' }}>
+                       "{user.first_name} {user.last_name}"
+                    </span>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={() => setShowWelcome(false)}>
+                        Đóng
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
             {/* Phần hiển thị nội dung chính bên trái */}
             <div style={{ flex: 8, ...css.mainContent }}>
                 <Card className="text-center">
-                    <Card.Header as="h1">Xin chào, quản lí {user.first_name} {user.last_name}</Card.Header>
+
+
+                    <Card.Header as="h1">
+                        {activeSection === 'categories' && `Trang Quản Lý Category`}
+                        {activeSection === 'topics' && `Trang Quản Lý Topic`}
+                        {activeSection === 'petpost' && `Trang Quản Lý PetPost`}
+
+                    </Card.Header>
+
                     <Card.Body>
                         {showAlert && (
                             <Alert
@@ -511,7 +538,10 @@ const Moderator = () => {
 
 
                                                         <Button style={css.petPostButton}>Sửa</Button>
-                                                        <Button style={css.petPostButton} onClick={() => deletePetPost(petPostId)} >Xóa</Button>
+                                                        <Button style={css.petPostButton} onClick={() => {
+                                                            console.log('Deleting PetPost with ID:', post.id);  // Thêm log để xem ID trước khi xóa
+                                                            deletePetPost(post.id)
+                                                        }}>Xóa</Button>
 
 
                                                     </li>
