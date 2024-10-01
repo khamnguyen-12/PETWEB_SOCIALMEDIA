@@ -34,6 +34,98 @@ const Moderator = () => {
     const [petPosts, setPetPosts] = useState([]);  // Add state to store pet posts
     const [showWelcome, setShowWelcome] = useState(true);
 
+
+    const [showModalPetpost, setShowModalPetPost] = useState(false); // State to control modal visibility
+
+
+    const [formData, setFormData] = useState({
+        title: '',
+        content: '',
+        author: '',
+        image: null,
+        topic: ''
+    });
+    const handleShow = () => setShowModalPetPost(true);
+    const handleClose = () => setShowModalPetPost(false);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value
+        });
+    };
+
+    const handleImageChange = (e) => {
+        setFormData({
+            ...formData,
+            image: e.target.files[0]
+        });
+    };
+
+    // Hàm gọi API để submit bài viết mới
+    const handleSubmit = async () => {
+        // Kiểm tra nếu có trường nào chưa được điền
+        if (!formData.author || !formData.content || !formData.image || !formData.title || !formData.topic) {
+            triggerAlert('Hãy điền đầy đủ thông tin!', 'error');
+            return; // Dừng lại nếu có trường chưa điền
+        }
+
+        try {
+            // Tạo formData object để gửi dữ liệu dưới dạng multipart/form-data
+            const formSubmitData = new FormData();
+            formSubmitData.append('title', formData.title);
+            formSubmitData.append('content', formData.content);
+            formSubmitData.append('author', formData.author);
+            formSubmitData.append('topic_id', formData.topic);
+
+            if (formData.image) {
+                formSubmitData.append('image', formData.image); // Đính kèm file ảnh
+            }
+
+            // In ra các dữ liệu trong FormData
+            for (let pair of formSubmitData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]); // Hiển thị từng cặp key-value của FormData
+            }
+
+            let res;
+
+            // Gửi dữ liệu tới API petpost
+            if (formData.id) {
+                // Nếu có id, thực hiện PATCH để cập nhật bài viết
+                res = await authAPI().patch(`${endpoints['petpost']}${formData.id}/`, formSubmitData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data' // Đảm bảo rằng content-type là multipart/form-data
+                    }
+                });
+            } else {
+                // Nếu không có id, thực hiện POST để tạo bài viết mới
+                res = await authAPI().post(endpoints['petpost'], formSubmitData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data' // Đảm bảo rằng content-type là multipart/form-data
+                    }
+                });
+            }
+
+            console.log(res.status);
+            console.log('Bài viết đã được xử lý:', res.data);
+            handleClose(); // Đóng modal sau khi gửi thành công
+
+            fetchDataWithLoading(fetchPetpost);
+            triggerAlert(formData.id ? "Bài viết được cập nhật thành công!" : "Bài viết được tạo thành công!", 'success');
+        } catch (error) {
+            // Log chi tiết lỗi để dễ dàng debug
+            console.error('Error processing pet post:', error);
+            if (error.response) {
+                console.log('Response data:', error.response.data); // Log dữ liệu từ response để xem lỗi cụ thể từ server
+                console.log('Response status:', error.response.status);
+                console.log('Response headers:', error.response.headers);
+            }
+            triggerAlert('Có lỗi xảy ra khi xử lý bài viết!', 'error');
+        }
+    };
+
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -44,13 +136,14 @@ const Moderator = () => {
                 console.error('Error fetching user data:', error);
             }
         };
-        triggerAlert('Topic added successfully!');
 
         fetchUser();
     }, []);
 
-    const triggerAlert = (message) => {
+    // Trigger alert function
+    const triggerAlert = (message, type) => {
         setAlertMessage(message); // Set the alert message
+        setAlertVariant(type); // Set the alert variant ('success' or 'error')
         setShowAlert(true); // Show the alert
 
         // Hide alert after 2 seconds
@@ -124,6 +217,19 @@ const Moderator = () => {
             setTopic(data);
             setShowTopic(true);
             setActiveSection('topics'); // Hiển thị phần topics
+            console.log(data);
+        } catch (error) {
+            console.error('Error fetch Topic:', error);
+        }
+    }
+
+
+    const fetchTopicsCombobox = async () => {
+        try {
+            const res = await authAPI().get(endpoints['topic']);
+            const data = res.data;
+            setTopic(data);
+            setShowTopic(true);
             console.log(data);
         } catch (error) {
             console.error('Error fetch Topic:', error);
@@ -312,6 +418,18 @@ const Moderator = () => {
         // fetchCategories(); // Lấy danh sách categories khi mở modal
     };
 
+    const handleEditClick = (post) => {
+        setFormData({
+            id: post.id, // Thêm id vào formData để nhận biết khi nào sửa
+            title: post.title,
+            content: post.content,
+            author: post.author,
+            topic: post.topic.id, // Giả sử topic có id
+            image: null // Xử lý ảnh nếu cần
+        });
+        setShowModalPetPost(true); // Hiển thị modal
+    };
+
 
     // Hàm thêm topic
     const addTopic = async (e) => {
@@ -354,9 +472,9 @@ const Moderator = () => {
                     <Modal.Title>MỪNG TRỞ LẠI</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    HAVE A GOOD DAY MODERATOR                           
+                    HAVE A GOOD DAY MODERATOR
                     <span style={{ fontWeight: 'bold', fontSize: '1.3em' }}>
-                       "{user.first_name} {user.last_name}"
+                        "{user.first_name} {user.last_name}"
                     </span>
                 </Modal.Body>
                 <Modal.Footer>
@@ -382,12 +500,16 @@ const Moderator = () => {
                         {showAlert && (
                             <Alert
                                 variant={alertVariant}
-                                style={showAlert ? css.alertPopup : { ...css.alertPopup, ...css.fadeOut }}
+                                style={
+                                    showAlert ? { ...css.alertPopup, ...(alertVariant === 'success' ? css.alertSuccess : css.alertError) }
+                                        : { ...css.alertPopup, ...css.fadeOut }
+                                }
                             >
                                 <i className={alertVariant === 'success' ? 'bi bi-check-circle-fill' : 'bi bi-exclamation-triangle-fill'}></i>
                                 {` ${alertMessage}`}
                             </Alert>
                         )}
+
 
                         {/* Hiển thị nội dung dựa trên trạng thái của activeSection */}
                         {activeSection === 'categories' && (
@@ -518,7 +640,97 @@ const Moderator = () => {
                         {activeSection === 'petpost' && (
                             <>
                                 <div style={css.petPostsSection}>
-                                    <h3 className="mt-4" style={css.petPostsHeader}>Pet Posts</h3>
+
+                                    <div style={css.headerFunction}>
+
+                                        <h3
+                                            className="mt-4" style={css.petPostsHeader}>Pet Posts</h3>
+
+                                        <Button onClick={handleShow}> Tạo mới</Button>
+                                    </div>
+
+
+
+                                    <Modal show={showModalPetpost} onHide={handleClose}>
+                                        <Modal.Header closeButton>
+                                            <Modal.Title>{formData.id ? 'Sửa petpost' : 'Tạo bài viết mới'}</Modal.Title>
+                                        </Modal.Header>
+                                        <Modal.Body>
+                                            <Form>
+                                                <Form.Group controlId="formTitle">
+                                                    <Form.Label>Title</Form.Label>
+                                                    <Form.Control
+                                                        type="text"
+                                                        name="title"
+                                                        value={formData.title}
+                                                        onChange={handleChange}
+                                                        placeholder="Nhập tiêu đề"
+                                                    />
+                                                </Form.Group>
+
+                                                <Form.Group controlId="formContent">
+                                                    <Form.Label>Content</Form.Label>
+                                                    <Form.Control
+                                                        as="textarea"
+                                                        name="content"
+                                                        value={formData.content}
+                                                        onChange={handleChange}
+                                                        rows={3}
+                                                        placeholder="Nhập nội dung"
+                                                    />
+                                                </Form.Group>
+
+                                                <Form.Group controlId="formAuthor">
+                                                    <Form.Label>Author</Form.Label>
+                                                    <Form.Control
+                                                        type="text"
+                                                        name="author"
+                                                        value={formData.author}
+                                                        onChange={handleChange}
+                                                        placeholder="Nhập tên tác giả"
+                                                    />
+                                                </Form.Group>
+
+                                                {/* Sử dụng combobox (select) để hiển thị topics */}
+                                                <Form.Group controlId="formTopic">
+                                                    <Form.Label>Topic</Form.Label>
+                                                    <Form.Select
+                                                        name="topic"
+                                                        value={formData.topic}
+                                                        onChange={handleChange}
+                                                        onClick={fetchTopicsCombobox} // Gọi API khi click vào combobox
+                                                    >
+                                                        <option value="">Chọn chủ đề</option>
+                                                        {topics.map((topic, index) => (
+                                                            <option key={index} value={topic.id}>
+                                                                {topic.name}
+                                                            </option>
+                                                        ))}
+                                                    </Form.Select>
+                                                </Form.Group>
+
+
+                                                <Form.Group controlId="formImage">
+                                                    <Form.Label>Image</Form.Label>
+                                                    <Form.Control
+                                                        type="file"
+                                                        name="image"
+                                                        onChange={handleImageChange}
+                                                    />
+                                                </Form.Group>
+                                            </Form>
+                                        </Modal.Body>
+                                        <Modal.Footer>
+                                            <Button variant="secondary" onClick={handleClose}>
+                                                Đóng
+                                            </Button>
+                                            <Button variant="primary" onClick={handleSubmit}>
+                                                {formData.id ? 'Cập nhật bài viết' : 'Lưu bài viết'}
+                                            </Button>
+                                        </Modal.Footer>
+                                    </Modal>
+
+
                                     {/* Display fetched pet posts */}
                                     {petPosts.length > 0 ? (
                                         <ul className="list-group mt-4" style={css.petPostList}>
@@ -533,13 +745,12 @@ const Moderator = () => {
                                                 return (
                                                     <li key={post.id} className="list-group-item" style={css.petPostItem}>
                                                         {/* Bỏ qua tiêu đề và nội dung để chỉ hiển thị tên topic và danh mục */}
-                                                        <small>Topic: {post.topic.name} - Category: {post.topic.category.name}</small>
+                                                        <small>Title: {post.title} - Topic: {post.topic.name}</small>
                                                         {/* <img src={imageUrl}></img> */}
 
 
-                                                        <Button style={css.petPostButton}>Sửa</Button>
+                                                        <Button style={css.petPostButton} onClick={() => { handleEditClick(post) }}>Sửa</Button>
                                                         <Button style={css.petPostButton} onClick={() => {
-                                                            console.log('Deleting PetPost with ID:', post.id);  // Thêm log để xem ID trước khi xóa
                                                             deletePetPost(post.id)
                                                         }}>Xóa</Button>
 
@@ -717,6 +928,31 @@ const css = {
         backgroundColor: '#f5f5f5',
         minHeight: '100vh',
     },
+    alertPopup: {
+        padding: '10px',
+        borderRadius: '5px',
+        marginBottom: '10px',
+        display: 'inline-block',
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        zIndex: 999,
+        transition: 'opacity 0.5s ease-out',
+    },
+
+    fadeOut: {
+        opacity: 0,
+    },
+
+    alertSuccess: {
+        backgroundColor: '#d4edda',
+        color: '#155724',
+    },
+
+    alertError: {
+        backgroundColor: '#f8d7da',
+        color: '#721c24',
+    },
 
     petPostButton:
     {
@@ -751,6 +987,11 @@ const css = {
         margin: '20px 0',
     },
 
+    headerFunction: {
+        display: 'flex',
+        gap: '550px',
+        padding: 0,
+    },
 
     categoryItem: {
         padding: '10px 20px',
