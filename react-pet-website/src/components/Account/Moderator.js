@@ -121,7 +121,7 @@ const Moderator = () => {
                 console.log('Response status:', error.response.status);
                 console.log('Response headers:', error.response.headers);
             }
-            triggerAlert('Có lỗi xảy ra khi xử lý bài viết!', 'error');
+            triggerAlert('Đã có lỗi xảy ra khi xử lý bài viết!', 'error');
         }
     };
 
