@@ -148,7 +148,7 @@ class PostViewSet(viewsets.ViewSet,
                   generics.DestroyAPIView):
     queryset = Post.objects.filter(active=True).all()
     serializer_class = serializers.PostSerializer
-    permission_classes = [permissions.AllowAny()]
+    permission_classes = [permissions.IsAuthenticated()]
     pagination_class = paginators.PostPaginator
 
     def get_permissions(self):
@@ -260,7 +260,6 @@ class PostViewSet(viewsets.ViewSet,
         if page is not None:
             serializer = serializers.CommentSerializer(page, many=True)
             return paginator.get_paginated_response(serializer.data)
-
         return Response(serializers.CommentSerializer(comments, many=True).data)
 
 

@@ -11,7 +11,7 @@ import giftBoxImg from '../../images/giftbox.png'
 import earthImg from '../../images/earth.png'
 
 
-const typewriterTexts = ["Chó", "Mèo", "Chim", "Hamster"];
+const typewriterTexts = [" Chó", " Mèo", " Chim", " Hamster"];
 
 const Login = ({ setShowSidebar }) => {
     const [username, setUsername] = useState('');
@@ -25,6 +25,10 @@ const Login = ({ setShowSidebar }) => {
     const [displayedText, setDisplayedText] = useState('');
     const nav = useNavigate();
 
+    const corgi = "https://wallpaperaccess.com/full/6744897.jpg";
+    const ox = "https://wallpaperaccess.com/full/4378184.jpg";
+    const milkcafe = "https://wallpaperaccess.com/full/5051543.jpg";
+    // const backgroundImg = "https://wallpaperaccess.com/full/5051543.jpg";
     useEffect(() => {
         let typewriterInterval;
 
@@ -234,10 +238,10 @@ const Login = ({ setShowSidebar }) => {
 
                 {/* Card Section - User with Dog */}
                 <div className="card p-3 shadow bg-white rounded" style={styles.card}>
-                    <img src={backgroundImg} alt="User with Dog" style={styles.cardImage} />
+                    <img src={corgi} alt="User with Dog" style={styles.cardImage} />
                     <div style={styles.caption}>
-                        <strong>Minh Nhựt</strong>
-                        <p>và bạn chó Golden Retriever tên SAM</p>
+                        <strong>SAM</strong>
+                        <p>"Mình rất thích đi dạo sáng sướm như này í!"</p>
                     </div>
                 </div>
 
@@ -256,10 +260,10 @@ const Login = ({ setShowSidebar }) => {
 
                 {/* Card Section - User with Cat */}
                 <div className="card p-3 shadow bg-white rounded" style={styles.card}>
-                    <img src={backgroundImg} alt="User with Cat" style={styles.cardImage} />
+                    <img src={ox} alt="User with Cat" style={styles.cardImage} />
                     <div style={styles.caption}>
-                        <strong>Kim Ngọc</strong>
-                        <p>và mèo Bengal tên MIA</p>
+                        <strong>MIA</strong>
+                        <p>"Có ai nhận nuôi em không ạ?"</p>
                     </div>
                 </div>
 
@@ -279,10 +283,10 @@ const Login = ({ setShowSidebar }) => {
 
                 {/* Card Section - User with Parrot */}
                 <div className="card p-3 shadow bg-white rounded" style={styles.card}>
-                    <img src={backgroundImg} alt="User with Parrot" style={styles.cardImage} />
+                    <img src={milkcafe} alt="User with Parrot" style={styles.cardImage} />
                     <div style={styles.caption}>
-                        <strong>Hoàng Minh</strong>
-                        <p>và vẹt xanh lá tên TOTO</p>
+                        <strong>Milk & Coffee</strong>
+                        <p>"Tụi mình là anh em guột đó!"</p>
                     </div>
                 </div>
 

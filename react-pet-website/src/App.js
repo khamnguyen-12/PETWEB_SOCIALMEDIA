@@ -18,6 +18,12 @@ import DetailPost from './components/Post/DetailPost';
 import Comment from './components/Post/Comment';
 import Moderator from './components/Account/Moderator';
 
+import btnHome from './images/house.png';
+import btnZoo from './images/pets.png';
+import btnLearn from './images/learning.png';
+import btnProfile from './images/profile.png';
+
+
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, cookie.load("user") || null);
   const [showMainContent, setShowMainContent] = useState(true);
@@ -48,19 +54,31 @@ const App = () => {
             {showSidebar ? (
               <div style={sidebarStyles}>
                 <div style={buttonWrapperStyles}>
-                  <Link to="/" style={buttonLinkStyles}>Trang chủ</Link>
+                  <Link to="/" style={buttonLinkStyles}>
+                    <img src={btnHome} alt="Trang chủ" style={iconStyles} />
+                    Trang chủ
+                  </Link>
+                  <Link to="/" style={buttonLinkStyles}>
+                    <img src={btnLearn} alt="Kiến thức" style={iconStyles} />
+                    Kiến thức
+                  </Link>
+                  <Link to="/" style={buttonLinkStyles}>
+                    <img src={btnZoo} alt="Vườn thú" style={iconStyles} />
+                    Vườn thú
+                  </Link>
                 </div>
                 <div style={buttonWrapperStyles}>
                   {user?.role === 2 ? (
-                    <Link to="/moderator" style={buttonLinkStyles}>Trang Cá nhân (Moderator)</Link>
-
+                    <Link to="/moderator" style={buttonLinkStyles}>
+                      <img src={btnProfile} alt="Moderator" style={iconStyles} />
+                      Trang Cá nhân (Moderator)
+                    </Link>
                   ) : (
-                    <Link to="/profile" style={buttonLinkStyles}>Trang Cá nhân</Link>
-
+                    <Link to="/profile" style={buttonLinkStyles}>
+                      <img src={btnProfile} alt="Trang Cá nhân" style={iconStyles} />
+                      Trang Cá nhân
+                    </Link>
                   )}
-
-
-
                 </div>
               </div>
             ) : (
@@ -120,24 +138,37 @@ const sidebarStyles = {
   boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
   display: 'flex',
   flexDirection: 'column',
+  alignItems: 'flex-start',
+
   justifyContent: 'center',
 };
 
+const iconStyles = {
+  width: '20px',  // Kích thước icon
+  height: '20px',
+  marginRight: '10px',  // Khoảng cách giữa icon và văn bản
+}; 
+
 const buttonWrapperStyles = {
-  margin: '10px 0',
+  // margin: '5px 0',
   width: '100%',
   textAlign: 'center',
+  marginBottom: '20px',
+
 };
 
 const buttonLinkStyles = {
-  display: 'block',
+  display: 'flex',
   width: '100%',
   padding: '10px 0',
   textDecoration: 'none',
   color: '#007bff',
   fontSize: '18px',
   backgroundColor: '#e9ecef',
-  borderRadius: '4px',
+  borderRadius: '33px',
+  margin: '10px 0',
+  alignItems: 'center',  // Căn giữa icon với text theo chiều dọc
+
 };
 
 export default App;
