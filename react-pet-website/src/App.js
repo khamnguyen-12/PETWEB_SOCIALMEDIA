@@ -1,6 +1,6 @@
 import React, { useState, useReducer, useEffect } from 'react';
 import './App.css';
-import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Navbar from "./components/Navbar/Navbar";
@@ -8,7 +8,6 @@ import Footer from "./components/Footer/Footer";
 import Login from "./components/Account/Login";
 import Signup from './components/Account/Signup';
 import MainContent from './components/MainContent/MainContent';
-import Info from './components/Navbar/Info';
 import MyUserReducer from './components/MyReducer/MyUserReducer';
 import cookie from "react-cookies";
 import { MyDispatchContext, MyUserContext } from './configs/MyContext';
@@ -22,11 +21,11 @@ import btnHome from './images/house.png';
 import btnZoo from './images/pets.png';
 import btnLearn from './images/learning.png';
 import btnProfile from './images/profile.png';
-
+import logo from './images/logo.png';
+import Petpost from './components/Post/Petpost';
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, cookie.load("user") || null);
-  const [showMainContent, setShowMainContent] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false);
 
   useEffect(() => {
@@ -45,48 +44,16 @@ const App = () => {
     return children;
   }
 
+  const isActive = (path, currentPath) => path === currentPath;
 
   return (
     <SnackbarProvider maxSnack={3}>
       <BrowserRouter>
         <MyUserContext.Provider value={user}>
           <MyDispatchContext.Provider value={dispatch}>
-            {showSidebar ? (
-              <div style={sidebarStyles}>
-                <div style={buttonWrapperStyles}>
-                  <Link to="/" style={buttonLinkStyles}>
-                    <img src={btnHome} alt="Trang chủ" style={iconStyles} />
-                    Trang chủ
-                  </Link>
-                  <Link to="/" style={buttonLinkStyles}>
-                    <img src={btnLearn} alt="Kiến thức" style={iconStyles} />
-                    Kiến thức
-                  </Link>
-                  <Link to="/" style={buttonLinkStyles}>
-                    <img src={btnZoo} alt="Vườn thú" style={iconStyles} />
-                    Vườn thú
-                  </Link>
-                </div>
-                <div style={buttonWrapperStyles}>
-                  {user?.role === 2 ? (
-                    <Link to="/moderator" style={buttonLinkStyles}>
-                      <img src={btnProfile} alt="Moderator" style={iconStyles} />
-                      Trang Cá nhân (Moderator)
-                    </Link>
-                  ) : (
-                    <Link to="/profile" style={buttonLinkStyles}>
-                      <img src={btnProfile} alt="Trang Cá nhân" style={iconStyles} />
-                      Trang Cá nhân
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <Navbar />
-            )}
+            <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
 
             <Routes>
-              {/* Nếu người dùng chưa đăng nhập, điều hướng đến trang Login */}
               <Route
                 exact
                 path='/'
@@ -95,29 +62,19 @@ const App = () => {
               <Route
                 path='/login'
                 element={
-                  <Login
-                    setShowMainContent={setShowMainContent}
-                    setShowSidebar={setShowSidebar}
-                  />
+                  <Login />
                 }
               />
-              {/* <Route path='/info' element={<Info />} /> */}
               <Route path='/signup' element={<Signup />} />
               <Route path='/profile' element={<Profile />} />
               <Route path="/post/:id" element={<DetailPost />} />
-              <Route path="/post/:id/comments" element={<Comment />} /> {/* Thêm Route cho Comment */}
-
-
-
+              <Route path="/post/:id/comments" element={<Comment />} />
+              <Route path="/petpost/" element={<Petpost />} />
               <Route path='/moderator' element={
                 <ProtectedRoute user={user} roleRequired={2}>
-
                   <Moderator />
                 </ProtectedRoute>
-              }
-
-              />
-
+              } />
             </Routes>
             {!user && <Footer />}
           </MyDispatchContext.Provider>
@@ -125,50 +82,98 @@ const App = () => {
       </BrowserRouter>
     </SnackbarProvider>
   );
-}
+};
+
+// Component xử lý Sidebar với useLocation
+const LocationAwareSidebar = ({ showSidebar, isActive, user }) => {
+  const location = useLocation(); // Đặt useLocation trong BrowserRouter ngữ cảnh đúng
+
+  return showSidebar ? (
+    <div style={sidebarStyles}>
+      <Link to="/">
+      <img src={logo} alt="LOgo" style={logoStyles}/>
+
+      </Link>
+
+      <div style={buttonWrapperStyles}>
+        <Link to="/" style={buttonLinkStyles(isActive('/', location.pathname))}>
+          <img src={btnHome} alt="Trang chủ" style={iconStyles} />
+          Trang chủ
+        </Link>
+        <Link to="/petpost/" style={buttonLinkStyles(isActive('/learn', location.pathname))}>
+          <img src={btnLearn} alt="Kiến thức" style={iconStyles} />
+          Kiến thức
+        </Link>
+        <Link to="/zoo" style={buttonLinkStyles(isActive('/zoo', location.pathname))}>
+          <img src={btnZoo} alt="Vườn thú" style={iconStyles} />
+          Vườn thú
+        </Link>
+      </div>
+      <div style={buttonWrapperStyles}>
+        {user?.role === 2 ? (
+          <Link to="/moderator" style={buttonLinkStyles(isActive('/moderator', location.pathname))}>
+            <img src={btnProfile} alt="Moderator" style={iconStyles} />
+            Trang Cá nhân (Moderator)
+          </Link>
+        ) : (
+          <Link to="/profile" style={buttonLinkStyles(isActive('/profile', location.pathname))}>
+            <img src={btnProfile} alt="Trang Cá nhân" style={iconStyles} />
+            Trang Cá nhân
+          </Link>
+        )}
+      </div>
+    </div>
+  ) : (
+    <Navbar />
+  );
+};
+
+// Các style cho Sidebar và link button
+const buttonLinkStyles = (isActive) => ({
+  display: 'flex',
+  width: '100%',
+  padding: '10px 20px',
+  textDecoration: 'none',
+  color: isActive ? '#fff' : '#007bff',
+  fontSize: '18px',
+  backgroundColor: isActive ? '#1769ff' : '#e9ecef',
+  borderRadius: '33px',
+  margin: '10px 0',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+});
 
 const sidebarStyles = {
+  background: 'linear-gradient(66deg, #1ab7ea, #1769ff)',
   position: 'fixed',
-  top: 0,
-  left: 0,
+  top: '15px',
+  left: '200px',
   width: '200px',
-  height: '100%',
-  backgroundColor: '#f5f5f5',
+  height: '75%',
   padding: '20px',
   boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-
+  borderRadius: '33px',
   justifyContent: 'center',
 };
+const logoStyles = {
+  width: '150px', // Kích thước logo
+  marginBottom: '10px', // Khoảng cách dưới logo
+  borderRadius: '33px',
 
+};
 const iconStyles = {
-  width: '20px',  // Kích thước icon
+  width: '20px',
   height: '20px',
-  marginRight: '10px',  // Khoảng cách giữa icon và văn bản
-}; 
+  marginRight: '10px',
+};
 
 const buttonWrapperStyles = {
-  // margin: '5px 0',
   width: '100%',
   textAlign: 'center',
   marginBottom: '20px',
-
-};
-
-const buttonLinkStyles = {
-  display: 'flex',
-  width: '100%',
-  padding: '10px 0',
-  textDecoration: 'none',
-  color: '#007bff',
-  fontSize: '18px',
-  backgroundColor: '#e9ecef',
-  borderRadius: '33px',
-  margin: '10px 0',
-  alignItems: 'center',  // Căn giữa icon với text theo chiều dọc
-
 };
 
 export default App;

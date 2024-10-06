@@ -927,6 +927,7 @@ const css = {
         paddingLeft: '15%',
         backgroundColor: '#f5f5f5',
         minHeight: '100vh',
+        paddingLeft: '420px'
     },
     alertPopup: {
         padding: '10px',
