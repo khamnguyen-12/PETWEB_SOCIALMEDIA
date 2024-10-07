@@ -135,7 +135,25 @@ class PetPost(BaseModel):
         ordering = ['-created_date']
 
 
+class PostReport(models.Model):
+    class Status(models.IntegerChoices):
+        PENDING = 1, "Chờ xử lý"
+        RESOLVED = 3, "Đã giải quyết"
+        REJECTED = 4, "Bị từ chối"
 
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')
+    post = models.ForeignKey(PetPost, on_delete=models.CASCADE, related_name='reports')
+    reason = models.TextField()  # Người dùng có thể nhập lý do báo cáo
+    status = models.IntegerField(choices=Status.choices, default=Status.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)  # Thời gian báo cáo
+    updated_at = models.DateTimeField(auto_now=True)  # Thời gian cập nhật trạng thái báo cáo
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'role': User.Role.MODERATOR}, related_name='reports_reviewed')  # Người quản lý xem xét báo cáo
+
+    def __str__(self):
+        return f"Báo cáo bài đăng: {self.post.title} bởi {self.reporter.username}"
+
+    class Meta:
+        ordering = ['-created_at']  # Sắp xếp theo thời gian tạo báo cáo mới nhất
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

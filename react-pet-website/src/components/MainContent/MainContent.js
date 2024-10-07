@@ -120,6 +120,11 @@ const MainContent = () => {
     };
 
     const handlePostSubmit = async () => {
+
+        if (!content.trim()) {
+            alert("Vui lòng nhập nội dung trước khi đăng bài."); // Hiển thị cảnh báo
+            return;
+        }
         setIsSubmitting(true);
         const formData = new FormData();
         formData.append('content', content);

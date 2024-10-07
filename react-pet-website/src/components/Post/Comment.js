@@ -82,7 +82,10 @@ const Comment = () => {
 
 
     const handleCommentSubmit = async () => {
-        if (!comment.trim()) return;
+        if (!comment.trim()) {
+            setError('Bạn muốn comment gì thế, bạn tôi?.');
+            return
+        };
 
         setLoading(true);
         setError(null);
