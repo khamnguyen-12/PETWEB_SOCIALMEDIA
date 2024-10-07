@@ -26,6 +26,7 @@
     'edit_topic' : (id) => `/topics/${id}/`,
     'petpost' :'/petpost/',
     'delete_petpost' : (id) => `/petpost/${id}/deactive-petpost/`,
+    'topic/petpost' : (id) => `/petpost/topic/${id}/`,
 }   
     
     export const authAPI = () => {

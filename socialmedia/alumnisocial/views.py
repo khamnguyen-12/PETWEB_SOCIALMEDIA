@@ -463,3 +463,18 @@ class PetPostViewSet(viewsets.ModelViewSet):
             return Response("PetPost deactivated successfully", status=status.HTTP_200_OK)
         except PetPost.DoesNotExist:
             return Response({"error": "PetPost not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['get'], url_path='topic/(?P<topic_id>[^/.]+)')
+    def list_by_topic(self, request, topic_id=None):
+        """
+        Lọc và trả về danh sách PetPost theo topic_id.
+        """
+        try:
+            # Tìm Topic theo topic_id
+            topic = Topic.objects.get(pk=topic_id)
+            # Lọc các PetPost thuộc về Topic này và active=True
+            pet_posts = PetPost.objects.filter(topic=topic, active=True)
+            serializer = self.get_serializer(pet_posts, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Topic.DoesNotExist:
+            return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)

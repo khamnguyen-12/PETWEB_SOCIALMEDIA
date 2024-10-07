@@ -5,7 +5,7 @@ import APIs, { endpoints, authAPI } from "../../configs/APIs";
 import cookie from "react-cookies";
 import { MyDispatchContext } from '../../configs/MyContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import backgroundImg from '../../images/login2.jpeg'; // Import the image
+import backgroundImg from '../../images/login3.jpg'; // Import the image
 import friendImg from '../../images/friend.png'
 import giftBoxImg from '../../images/giftbox.png'
 import earthImg from '../../images/earth.png'
