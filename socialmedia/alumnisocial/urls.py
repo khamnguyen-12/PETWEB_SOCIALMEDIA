@@ -12,6 +12,8 @@ r.register('comments', views.CommentViewSet, basename='comments')
 r.register('petpost', views.PetPostViewSet, basename='petposts')
 r.register('categories', views.CategoryViewSet, basename='categories')
 r.register('topics', views.TopicViewSet, basename='topics')
+r.register('report', views.PostReportViewSet, basename='report')
+
 # r.register('notifications', views.NotificationViewSet, basename='notifications')
 
 urlpatterns = [

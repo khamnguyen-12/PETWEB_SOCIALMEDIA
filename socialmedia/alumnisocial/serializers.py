@@ -154,13 +154,17 @@ class PetPostSerializer(serializers.ModelSerializer):
         return value
 
 
-# class PetPostSerializer(serializers.ModelSerializer):
-#     user = UserInteractionSerializer()
-#     class Meta:
-#         model = PetPost
-#         fields = '__all__'
-#         read_only_fields = ['id', 'created_date']
-#         extra_kwargs = {
-#             'created_date': {'read_only': True},
-#
-#         }
+class PostReportSerializer(serializers.ModelSerializer):
+    reporter_username = serializers.ReadOnlyField(source='reporter.username')
+    post_title = serializers.ReadOnlyField(source='post.title')
+    status_display = serializers.CharField(source='get_status_report_display', read_only=True)
+
+    class Meta:
+        model = Report
+        fields = ['id', 'reporter', 'reporter_username', 'post', 'post_title', 'reason', 'status_report', 'status_display', 'reviewed_by', 'created_date']
+        read_only_fields = ['id', 'reporter', 'reporter_username', 'post', 'post_title', 'status_display', 'reviewed_by', 'created_date']
+
+    def create(self, validated_data):
+        # Gán tự động người dùng làm người báo cáo
+        validated_data['reporter'] = self.context['request'].user
+        return super().create(validated_data)

@@ -478,3 +478,48 @@ class PetPostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Topic.DoesNotExist:
             return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class PostReportViewSet(viewsets.ModelViewSet):
+    queryset = Report.objects.all()
+    serializer_class = serializers.PostReportSerializer
+
+    def get_permissions(self):
+        if self.action in ['create']:  # Người dùng có thể tạo và xem danh sách báo cáo
+            permission_classes = [permissions.IsAuthenticated]
+        elif self.action in ['update', 'partial_update',
+                             'destroy', 'list']:  # Chỉ quản lý (MODERATOR) có thể cập nhật trạng thái báo cáo
+            permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+        else:
+            permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
+    def perform_create(self, serializer):
+        # Gán người dùng hiện tại làm người báo cáo
+        serializer.save(reporter=self.request.user)
+
+    def perform_update(self, serializer):
+        # Gán người quản lý hiện tại là người xem xét báo cáo
+        serializer.save(reviewed_by=self.request.user)
+
+    # Thêm action riêng để người dùng báo cáo bài viết
+    @action(detail=True, methods=['post'], url_path='report-post')
+    def report_post(self, request, pk=None):
+        """
+        API action riêng để người dùng báo cáo bài viết.
+        """
+        try:
+            # Lấy bài viết được báo cáo dựa trên pk
+            post = Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return Response({'detail': 'Bài viết không tồn tại.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Tạo một báo cáo bài viết mới
+        serializer = serializers.PostReportSerializer(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            # Lưu báo cáo và gán người báo cáo là người dùng hiện tại
+            serializer.save(reporter=request.user, post=post)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

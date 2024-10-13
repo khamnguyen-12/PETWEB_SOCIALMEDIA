@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
@@ -7,6 +8,7 @@ from ckeditor_uploader.fields import RichTextUploadingField
 from django.db.models import Count
 from django.contrib.auth.models import User
 from bs4 import BeautifulSoup
+from django.utils import timezone
 from pyasn1_modules.rfc3739 import Gender
 
 
@@ -66,12 +68,6 @@ class Image(models.Model):
 class Video(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='videos')
     video = models.FileField(upload_to='videos/')
-
-# class Video(models.Model):
-#     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='videos')
-#     video = CloudinaryField(null=True)
-
-
 
 class Interaction(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -135,14 +131,14 @@ class PetPost(BaseModel):
         ordering = ['-created_date']
 
 
-class PostReport(BaseModel):
+class Report(BaseModel):
     class Status(models.IntegerChoices):
         PENDING = 1, "Chờ xử lý"
         RESOLVED = 3, "Đã giải quyết"
         REJECTED = 4, "Bị từ chối"
 
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')
-    post = models.ForeignKey(PetPost, on_delete=models.CASCADE, related_name='reports')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reports')
     reason = models.TextField()  # Người dùng có thể nhập lý do báo cáo
     status_report = models.IntegerField(choices=Status.choices, default=Status.PENDING)
     reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'role': User.Role.MODERATOR}, related_name='reports_reviewed')  # Người quản lý xem xét báo cáo

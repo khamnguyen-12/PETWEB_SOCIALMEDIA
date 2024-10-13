@@ -23,6 +23,7 @@ import btnLearn from './images/learning.png';
 import btnProfile from './images/profile.png';
 import logo from './images/logo.png';
 import Petpost from './components/Post/Petpost';
+import Report from './components/MainContent/Report';
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, cookie.load("user") || null);
@@ -70,6 +71,9 @@ const App = () => {
               <Route path="/post/:id" element={<DetailPost />} />
               <Route path="/post/:id/comments" element={<Comment />} />
               <Route path="/petpost/" element={<Petpost />} />
+              <Route path="/report/:postId" element={<Report />} />
+
+
               <Route path='/moderator' element={
                 <ProtectedRoute user={user} roleRequired={2}>
                   <Moderator />

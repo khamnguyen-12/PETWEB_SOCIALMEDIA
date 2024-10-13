@@ -33,6 +33,7 @@ const Moderator = () => {
     const [newTopic, setNewTopic] = useState('');
     const [petPosts, setPetPosts] = useState([]);  // Add state to store pet posts
     const [showWelcome, setShowWelcome] = useState(true);
+    const [reports, setReports] = useState([]);
 
 
     const [showModalPetpost, setShowModalPetPost] = useState(false); // State to control modal visibility
@@ -461,7 +462,18 @@ const Moderator = () => {
         }
     };
 
-
+    const fetchReports = async () => {
+        try {
+            const response = await authAPI().get(endpoints['report']);
+            // Giả sử API trả về mảng các báo cáo
+            const reportsData = response.data;
+            setReports(reportsData);
+            console.log('Reports:', reportsData); // Hiển thị báo cáo trong console
+        } catch (error) {
+            console.error('Lỗi khi lấy báo cáo:', error);
+            alert('Có lỗi xảy ra khi lấy danh sách báo cáo.');
+        }
+    };
 
 
     return (
@@ -493,6 +505,7 @@ const Moderator = () => {
                         {activeSection === 'categories' && `Trang Quản Lý Category`}
                         {activeSection === 'topics' && `Trang Quản Lý Topic`}
                         {activeSection === 'petpost' && `Trang Quản Lý PetPost`}
+                        {activeSection === 'reports' && `Trang Quản Lý Báo Cáo`} {/* Thêm phần này */}
 
                     </Card.Header>
 
@@ -762,10 +775,30 @@ const Moderator = () => {
                                     ) : (
                                         <p>No pet posts available</p>
                                     )}
+
+
+
+
                                 </div>
                             </>
                         )}
 
+                        {activeSection === 'reports' && (
+                            <div style={css.reportList}>
+                                {reports.length > 0 ? (
+                                    reports.map(report => (
+                                        <div key={report.id} style={css.reportItem}>
+                                            <p><strong>Bài viết số :</strong> {report.post}</p>
+                                            <p><strong>Người báo cáo:</strong> {report.reporter_username}</p>
+                                            <p><strong>Lý do:</strong> {report.reason}</p>
+                                            <p><strong>Trạng thái:</strong> {report.status_display}</p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p>Không có báo cáo nào.</p>
+                                )}
+                            </div>
+                        )}
 
                     </Card.Body>
                 </Card>
@@ -832,6 +865,21 @@ const Moderator = () => {
                     )}
                 </Button>
 
+                <Button
+                    variant="primary"
+                    onClick={() => {
+                        setActiveSection('reports'); // Chuyển sang phần báo cáo
+                        fetchReports(); // Gọi hàm lấy dữ liệu báo cáo
+                    }}
+                    disabled={isLoading}
+                    style={css.button}
+                >
+                    {isLoading ? (
+                        <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                    ) : (
+                        'Báo cáo'
+                    )}
+                </Button>
 
 
 
@@ -843,6 +891,10 @@ const Moderator = () => {
                     Logout
                 </Button>
             </div>
+
+
+
+
 
             {/* Modal for adding new category */}
             <Modal show={showModal} onHide={() => setShowModal(false)}>

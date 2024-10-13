@@ -15,7 +15,9 @@ import heart from '../../images/heart.gif';
 import likeGif from '../../images/like.gif';
 import sadGif from '../../images/sad.gif';
 import laughGif from '../../images/laugh.gif';
-
+import reportPNG from '../../images/exclamation.png';
+import Modal from 'react-modal';
+import Report from '../MainContent/Report';
 
 const MainContent = () => {
     const [posts, setPosts] = useState([]);
@@ -32,6 +34,9 @@ const MainContent = () => {
     const navigate = useNavigate();
     const [reactions, setReactions] = useState({});
     const [commentCounts, setCommentCounts] = useState([]);
+
+    const [modalReport, setModalReport] = useState(false);
+    const [reportReason, setReportReason] = useState('');
 
     const handleCommentClick = (postId) => {
         setSelectedPost(postId);
@@ -251,8 +256,43 @@ const MainContent = () => {
                 return 'Yêu thích'; // Văn bản mặc định
         }
     };
+    // Hàm xử lý khi nhấn gửi báo cáo
+    // const handleSubmitReport = async (postId) => {
+    //     if (!reportReason.trim()) {
+    //         alert('Vui lòng nhập lý do báo cáo');
+    //         return;
+    //     }
+
+    //     try {
+    //         // Gửi yêu cầu POST lên API
+    //         const response = await authAPI().post(endpoints['user_report'](postId), {
+    //             reason: reportReason,
+    //         });
+
+    //         if (response.status === 200) {
+    //             alert('Báo cáo đã được gửi thành công');
+    //             closeModal(); // Đóng modal sau khi gửi thành công
+    //         }
+    //     } catch (error) {
+    //         console.error('Lỗi khi gửi báo cáo:', error);
+    //         alert('Có lỗi xảy ra khi gửi báo cáo. Vui lòng thử lại.');
+    //     }
+    // };
 
 
+
+    // Hàm mở modal
+    const openModal = (postId) => {
+        console.log('PostID bài post được chọn :', postId)
+        // Chuyển hướng đến trang báo cáo với ID của bài viết
+        navigate(`/report/${postId}`);
+    };
+
+    // // Hàm đóng modal
+    // const closeModal = () => {
+    //     setModalReport(false);    // Đóng modal
+    //     setReportReason('');      // Reset lý do báo cáo
+    // };
 
     return (
         <div css={styles.container}>
@@ -419,8 +459,8 @@ const MainContent = () => {
                             <span>Bình luận</span>
                         </div>
                         <div css={styles.actionGroup}>
-                            <img src={shareIcon} alt="Share" css={styles.actionIcon} />
-                            <span>Chia sẻ</span>
+                            <img src={reportPNG} alt="Share" css={styles.actionIcon} />
+                            <span>Báo cáo</span>
                         </div>
                     </div>
                 </div>
@@ -470,9 +510,6 @@ const MainContent = () => {
                                 )}
                                 <span>Có... bình luận</span>
                             </div>
-
-
-
                             <div css={styles.postActions}>
                                 <div css={styles.actionGroup} onClick={() => handleReactPost(post.id, 3)}>
                                     <img src={getReactionIcon(post.userReaction)} alt="Reaction" css={styles.actionIcon} />
@@ -525,9 +562,10 @@ const MainContent = () => {
                                     <img src={commentIcon} alt="Comment" css={styles.actionIcon} />
                                     <span>Bình luận</span>
                                 </div>
-                                <div css={styles.actionGroup}>
-                                    <img src={shareIcon} alt="Share" css={styles.actionIcon} />
-                                    <span>Chia sẻ</span>
+                                {/* Nút Báo cáo */}
+                                <div css={styles.actionGroup} onClick={() => openModal(post.id)}>
+                                    <img src={reportPNG} alt="Report" css={styles.actionIcon} />
+                                    <span>Báo cáo</span>
                                 </div>
                             </div>
                         </div>
@@ -536,8 +574,6 @@ const MainContent = () => {
                 </div>
             )}
         </div>
-
-
 
     );
 };
