@@ -37,6 +37,7 @@ const Moderator = () => {
 
 
     const [showModalPetpost, setShowModalPetPost] = useState(false); // State to control modal visibility
+    const [isDropdownOpen, setDropdownOpen] = useState(false);
 
 
     const [formData, setFormData] = useState({
@@ -48,6 +49,16 @@ const Moderator = () => {
     });
     const handleShow = () => setShowModalPetPost(true);
     const handleClose = () => setShowModalPetPost(false);
+
+    const toggleStatusDropdown = () => {
+        setDropdownOpen(!isDropdownOpen);
+    };
+
+    const handleStatusFilter = (status) => {
+        console.log('Lọc theo trạng thái: ', status);
+        // Thực hiện xử lý theo trạng thái
+        setDropdownOpen(false); // Đóng dropdown sau khi chọn
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -478,7 +489,6 @@ const Moderator = () => {
 
     return (
         <div style={css.container}>
-
             <Modal show={showWelcome} onHide={() => setShowWelcome(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>MỪNG TRỞ LẠI</Modal.Title>
@@ -782,23 +792,52 @@ const Moderator = () => {
                                 </div>
                             </>
                         )}
-
                         {activeSection === 'reports' && (
-                            <div style={css.reportList}>
+                            <div style={styles.reportContainer}>
                                 {reports.length > 0 ? (
-                                    reports.map(report => (
-                                        <div key={report.id} style={css.reportItem}>
-                                            <p><strong>Bài viết số :</strong> {report.post}</p>
-                                            <p><strong>Người báo cáo:</strong> {report.reporter_username}</p>
-                                            <p><strong>Lý do:</strong> {report.reason}</p>
-                                            <p><strong>Trạng thái:</strong> {report.status_display}</p>
-                                        </div>
-                                    ))
+                                    <table style={styles.table}>
+                                        <thead>
+                                            <tr>
+                                                <th style={styles.th}>Bài viết số</th>
+                                                <th style={styles.th}>Người báo cáo</th>
+                                                <th style={styles.th}>Lý do</th>
+                                                <th style={styles.th} onClick={toggleStatusDropdown}>
+                                                    Trạng thái
+                                                    {isDropdownOpen && (
+                                                        <div style={styles.dropdown}>
+                                                            <div
+                                                                style={styles.dropdownItem}
+                                                                onClick={() => handleStatusFilter('processed')}>
+                                                                Đã xử lí
+                                                            </div>
+                                                            <div
+                                                                style={styles.dropdownItem}
+                                                                onClick={() => handleStatusFilter('rejected')}>
+                                                                Bị từ chối
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {reports.map(report => (
+                                                <tr key={report.id} style={styles.tr}>
+                                                    <td style={styles.td}>{report.post}</td>
+                                                    <td style={styles.td}>{report.reporter_username}</td>
+                                                    <td style={styles.td}>{report.reason}</td>
+                                                    <td style={styles.td}>{report.status_display}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 ) : (
-                                    <p>Không có báo cáo nào.</p>
+                                    <p style={styles.noReport}>Không có báo cáo nào.</p>
                                 )}
                             </div>
                         )}
+
+
 
                     </Card.Body>
                 </Card>
@@ -929,9 +968,77 @@ const Moderator = () => {
     );
 };
 
+
+
+const styles = {
+    reportContainer: {
+        padding: '20px',
+        backgroundColor: '#f9f9f9',
+        borderRadius: '8px',
+        border: '1px solid #ddd',
+        maxHeight: '500px',
+        overflowY: 'auto',
+    },
+    table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        textAlign: 'left',
+        backgroundColor: '#fff',
+    },
+    th: {
+        padding: '12px',
+        backgroundColor: '#f2f2f2',
+        borderBottom: '2px solid #ddd',
+        fontWeight: 'bold',
+        position: 'relative', // Để dropdown nằm trong th
+        cursor: 'pointer',
+    },
+    tr: {
+        borderBottom: '1px solid #ddd',
+    },
+    td: {
+        padding: '10px',
+        borderBottom: '1px solid #ddd',
+    },
+    noReport: {
+        fontStyle: 'italic',
+        color: '#777',
+        textAlign: 'center',
+        padding: '20px',
+    },
+    dropdown: {
+        position: 'absolute',
+        top: '100%',
+        left: '0',
+        backgroundColor: '#fff',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+        zIndex: 100,
+        width: '150px',
+    },
+    dropdownItem: {
+        padding: '10px',
+        cursor: 'pointer',
+        borderBottom: '1px solid #ddd',
+        backgroundColor: '#fff',
+        transition: 'background-color 0.2s',
+    },
+    dropdownItemHover: {
+        backgroundColor: '#f0f0f0',
+    }
+};
+
+
+
+
 // Hàm chứa CSS
 const css = {
 
+    noReport: {
+        fontStyle: 'italic',
+        color: '#777',
+    },
     petPostsSection: {
         display: 'flex',
         flexDirection: 'column',
