@@ -37,7 +37,8 @@ const Moderator = () => {
 
 
     const [showModalPetpost, setShowModalPetPost] = useState(false); // State to control modal visibility
-    const [isDropdownOpen, setDropdownOpen] = useState(false);
+    const [isDropdownOpen, setDropdownOpen] = useState(null);
+    // const [reports, setReports] = useState('initialReports'); // Giả sử `initialReports` là dữ liệu ban đầu
 
 
     const [formData, setFormData] = useState({
@@ -50,14 +51,24 @@ const Moderator = () => {
     const handleShow = () => setShowModalPetPost(true);
     const handleClose = () => setShowModalPetPost(false);
 
-    const toggleStatusDropdown = () => {
-        setDropdownOpen(!isDropdownOpen);
+    const toggleStatusDropdown = (id) => {
+        if (isDropdownOpen === id) {
+            setDropdownOpen(null); // Đóng dropdown nếu đã mở
+        } else {
+            setDropdownOpen(id); // Mở dropdown của báo cáo được nhấn
+        }
     };
 
-    const handleStatusFilter = (status) => {
-        console.log('Lọc theo trạng thái: ', status);
-        // Thực hiện xử lý theo trạng thái
-        setDropdownOpen(false); // Đóng dropdown sau khi chọn
+    // Hàm để cập nhật trạng thái của báo cáo
+    const handleStatusChange = (id, newStatus) => {
+        const updatedReports = reports.map(report =>
+            report.id === id
+                ? { ...report, status_display: newStatus === 'processed' ? 'Đã xử lí' : 'Bị từ chối' }
+                : report
+        );
+
+        setReports(updatedReports); // Cập nhật lại state với trạng thái mới
+        setDropdownOpen(null); // Đóng dropdown sau khi chọn
     };
 
     const handleChange = (e) => {
@@ -801,23 +812,7 @@ const Moderator = () => {
                                                 <th style={styles.th}>Bài viết số</th>
                                                 <th style={styles.th}>Người báo cáo</th>
                                                 <th style={styles.th}>Lý do</th>
-                                                <th style={styles.th} onClick={toggleStatusDropdown}>
-                                                    Trạng thái
-                                                    {isDropdownOpen && (
-                                                        <div style={styles.dropdown}>
-                                                            <div
-                                                                style={styles.dropdownItem}
-                                                                onClick={() => handleStatusFilter('processed')}>
-                                                                Đã xử lí
-                                                            </div>
-                                                            <div
-                                                                style={styles.dropdownItem}
-                                                                onClick={() => handleStatusFilter('rejected')}>
-                                                                Bị từ chối
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </th>
+                                                <th style={styles.th}>Trạng thái</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -826,7 +821,26 @@ const Moderator = () => {
                                                     <td style={styles.td}>{report.post}</td>
                                                     <td style={styles.td}>{report.reporter_username}</td>
                                                     <td style={styles.td}>{report.reason}</td>
-                                                    <td style={styles.td}>{report.status_display}</td>
+                                                    <td style={styles.td} onClick={() => toggleStatusDropdown(report.id)}>
+                                                        {report.status_display}
+                                                        {isDropdownOpen === report.id && (
+                                                            <div style={styles.dropdown}>
+                                                                <div
+                                                                    style={{ ...styles.dropdownItem, ...styles.processedItem }}
+                                                                    onClick={() => handleStatusChange(report.id, 'processed')}
+                                                                >
+                                                                    Đã xử lí
+                                                                </div>
+                                                                <div
+                                                                    style={{ ...styles.dropdownItem, ...styles.rejectedItem }}
+                                                                    onClick={() => handleStatusChange(report.id, 'rejected')}
+                                                                >
+                                                                    Bị từ chối
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </td>
+
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -836,6 +850,7 @@ const Moderator = () => {
                                 )}
                             </div>
                         )}
+
 
 
 
@@ -990,8 +1005,6 @@ const styles = {
         backgroundColor: '#f2f2f2',
         borderBottom: '2px solid #ddd',
         fontWeight: 'bold',
-        position: 'relative', // Để dropdown nằm trong th
-        cursor: 'pointer',
     },
     tr: {
         borderBottom: '1px solid #ddd',
@@ -999,12 +1012,8 @@ const styles = {
     td: {
         padding: '10px',
         borderBottom: '1px solid #ddd',
-    },
-    noReport: {
-        fontStyle: 'italic',
-        color: '#777',
-        textAlign: 'center',
-        padding: '20px',
+        cursor: 'pointer', // Thêm con trỏ để biết có thể nhấn
+        position: 'relative', // Để menu dropdown hiển thị ngay trên ô
     },
     dropdown: {
         position: 'absolute',
@@ -1026,7 +1035,34 @@ const styles = {
     },
     dropdownItemHover: {
         backgroundColor: '#f0f0f0',
-    }
+    },
+    noReport: {
+        fontStyle: 'italic',
+        color: '#777',
+        textAlign: 'center',
+        padding: '20px',
+    },
+    dropdownItem: {
+        padding: '10px',
+        cursor: 'pointer',
+        borderBottom: '1px solid #ddd',
+        backgroundColor: '#fff',
+        transition: 'background-color 0.2s, color 0.2s',
+    },
+    processedItem: {
+        color: '#ff4d4d', // Màu đỏ cho "Đã xử lí"
+        ':hover': {
+            backgroundColor: '#ffcccc', // Nền đỏ nhạt khi hover
+            color: '#ff1a1a', // Đỏ đậm hơn khi hover
+        },
+    },
+    rejectedItem: {
+        color: '#ffc107', // Màu vàng cho "Bị từ chối"
+        ':hover': {
+            backgroundColor: '#ffe680', // Nền vàng nhạt khi hover
+            color: '#ffbf00', // Vàng đậm hơn khi hover
+        },
+    },
 };
 
 
