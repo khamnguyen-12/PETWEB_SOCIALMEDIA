@@ -29,6 +29,8 @@
     'topic/petpost' : (id) => `/petpost/topic/${id}/`,
     'user_report' : (id) => `/report/${id}/report-post/`,
     'report' : '/report/',
+    'mor_checkreport': (id) => `/report/${id}/update-status/`,
+    'user' : '/users/',
 }   
     
     export const authAPI = () => {

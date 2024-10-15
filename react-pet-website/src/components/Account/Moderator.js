@@ -27,7 +27,7 @@ const Moderator = () => {
     const [showAlert, setShowAlert] = useState(false); // State to control the visibility of the alert
     const [isLoading, setIsLoading] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(''); // Trạng thái để lưu category được chọn
-    const [isLoadingCategories, setIsLoadingCategories] = useState(true); // Trạng thái loading cho combobox
+    const [showPopup, setShowPopup] = useState(false);
 
     const [showTopicModal, setShowTopicModal] = useState(false);
     const [newTopic, setNewTopic] = useState('');
@@ -39,6 +39,7 @@ const Moderator = () => {
     const [showModalPetpost, setShowModalPetPost] = useState(false); // State to control modal visibility
     const [isDropdownOpen, setDropdownOpen] = useState(null);
     // const [reports, setReports] = useState('initialReports'); // Giả sử `initialReports` là dữ liệu ban đầu
+    const [popupMessage, setPopupMessage] = useState(null); // State để lưu thông báo
 
 
     const [formData, setFormData] = useState({
@@ -59,17 +60,60 @@ const Moderator = () => {
         }
     };
 
-    // Hàm để cập nhật trạng thái của báo cáo
-    const handleStatusChange = (id, newStatus) => {
-        const updatedReports = reports.map(report =>
-            report.id === id
-                ? { ...report, status_display: newStatus === 'processed' ? 'Đã xử lí' : 'Bị từ chối' }
-                : report
-        );
-
-        setReports(updatedReports); // Cập nhật lại state với trạng thái mới
-        setDropdownOpen(null); // Đóng dropdown sau khi chọn
+    const handlePostClick = (postId) => {
+        navigate(`/post-link/${postId}`); // Chuyển đến PostLink với postId
     };
+
+    // Hàm để cập nhật trạng thái của báo cáo
+    const handleStatusChange = async (id, newStatus) => {
+        try {
+            // Xác định giá trị trạng thái tương ứng với API
+            const statusValue = newStatus === 'processed' ? 2 : 3;
+
+            // Gọi API để cập nhật trạng thái báo cáo
+            const response = await authAPI().patch(endpoints.mor_checkreport(id), {
+                status_report: statusValue
+            });
+
+            // API trả về thành công, cập nhật giao diện
+            const updatedReports = reports.map(report =>
+                report.id === id
+                    ? { ...report, status_display: response.data.status_display } // Cập nhật theo phản hồi API
+                    : report
+            );
+
+            setReports(updatedReports); // Cập nhật lại state với trạng thái mới
+            setDropdownOpen(null); // Đóng dropdown sau khi chọn
+            // Hiển thị thông báo popup
+            setPopupMessage(`Trạng thái đã được cập nhật thành: ${response.data.status_display}`);
+
+        } catch (error) {
+            console.error("Lỗi khi cập nhật trạng thái:", error);
+            // Xử lý lỗi nếu cần
+        }
+    };
+
+    const PopupMessage = ({ message, duration = 2000, onClose }) => {
+        useEffect(() => {
+            if (message) {
+                const timer = setTimeout(() => {
+                    onClose(); // Tự động đóng sau thời gian đã định
+                }, duration);
+
+                // Dọn dẹp timer khi component unmount hoặc message thay đổi
+                return () => clearTimeout(timer);
+            }
+        }, [message, duration, onClose]);
+
+        if (!message) return null; // Không hiển thị nếu không có thông báo
+
+        return (
+            <div style={styles.popup}>
+                <p>{message}</p>
+            </div>
+        );
+    };
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -281,6 +325,37 @@ const Moderator = () => {
         }
     };
 
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case 'Đã giải quyết':
+                return {
+                    padding: '5px 10px',
+                    borderRadius: '8px',
+                    backgroundColor: '#d4edda', // Màu nền xanh nhạt
+                    color: '#155724', // Màu chữ xanh đậm
+                    border: '1px solid #c3e6cb'
+                };
+            case 'Bị từ chối':
+                return {
+                    padding: '5px 10px',
+                    borderRadius: '8px',
+                    backgroundColor: '#f8d7da', // Màu nền đỏ nhạt
+                    color: '#721c24', // Màu chữ đỏ đậm
+                    border: '1px solid #f5c6cb'
+                };
+            case 'Chờ xử lý':
+            default:
+                return {
+                    padding: '5px 10px',
+                    borderRadius: '8px',
+                    backgroundColor: '#fff3cd', // Màu nền vàng nhạt
+                    color: '#856404', // Màu chữ vàng đậm
+                    border: '1px solid #ffeeba'
+                };
+        }
+    };
+
+
     const loadCategories = async () => {
         try {
             const response = await authAPI().get(endpoints['category']);
@@ -294,11 +369,17 @@ const Moderator = () => {
         }
     };
 
-    // Gọi loadCategories khi component được tải
     useEffect(() => {
-        setShowWelcome(true);
+        setShowPopup(true);
         loadCategories();
 
+        // Tự động ẩn popup sau 3 giây
+        const timer = setTimeout(() => {
+            setShowPopup(false);
+        }, 3000);
+
+        // Cleanup timer
+        return () => clearTimeout(timer);
     }, []);
 
     const editCategory = async (id) => {
@@ -500,22 +581,16 @@ const Moderator = () => {
 
     return (
         <div style={css.container}>
-            <Modal show={showWelcome} onHide={() => setShowWelcome(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>MỪNG TRỞ LẠI</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    HAVE A GOOD DAY MODERATOR
+
+            {showPopup && (
+                <div style={styles.popup}>
+                    <strong>MỪNG TRỞ LẠI</strong><br />
+                    HAVE A GOOD DAY MODERATOR<br />
                     <span style={{ fontWeight: 'bold', fontSize: '1.3em' }}>
                         "{user.first_name} {user.last_name}"
                     </span>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="primary" onClick={() => setShowWelcome(false)}>
-                        Đóng
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+                </div>
+            )}
 
             {/* Phần hiển thị nội dung chính bên trái */}
             <div style={{ flex: 8, ...css.mainContent }}>
@@ -818,18 +893,24 @@ const Moderator = () => {
                                         <tbody>
                                             {reports.map(report => (
                                                 <tr key={report.id} style={styles.tr}>
-                                                    <td style={styles.td}>{report.post}</td>
-                                                    <td style={styles.td}>{report.reporter_username}</td>
+                                                    <td
+                                                        style={{ ...styles.td, cursor: 'pointer', color: 'blue' }}
+                                                        onClick={() => handlePostClick(report.post)} // Nhấn để chuyển đến PostLink
+                                                    >
+                                                        {report.post}
+                                                    </td>                                                    <td style={styles.td}>{report.reporter_username}</td>
                                                     <td style={styles.td}>{report.reason}</td>
                                                     <td style={styles.td} onClick={() => toggleStatusDropdown(report.id)}>
-                                                        {report.status_display}
+                                                        <span style={getStatusStyle(report.status_display)}>
+                                                            {report.status_display}
+                                                        </span>
                                                         {isDropdownOpen === report.id && (
                                                             <div style={styles.dropdown}>
                                                                 <div
                                                                     style={{ ...styles.dropdownItem, ...styles.processedItem }}
                                                                     onClick={() => handleStatusChange(report.id, 'processed')}
                                                                 >
-                                                                    Đã xử lí
+                                                                    Đã giải quyết
                                                                 </div>
                                                                 <div
                                                                     style={{ ...styles.dropdownItem, ...styles.rejectedItem }}
@@ -841,6 +922,8 @@ const Moderator = () => {
                                                         )}
                                                     </td>
 
+                                                    <PopupMessage message={popupMessage} onClose={() => setPopupMessage(null)} />
+
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -850,8 +933,6 @@ const Moderator = () => {
                                 )}
                             </div>
                         )}
-
-
 
 
                     </Card.Body>
@@ -986,6 +1067,22 @@ const Moderator = () => {
 
 
 const styles = {
+
+    popup: {
+        position: 'fixed',
+        bottom: '30px', // Tăng khoảng cách từ dưới lên để dễ nhìn hơn
+        right: '30px', // Tăng khoảng cách từ phải sang
+        padding: '15px 25px', // Tăng padding cho rộng hơn
+        backgroundColor: '#87CEFA', // Thay đổi màu nền sang xanh đậm (hoặc màu khác nổi bật)
+        color: '#fff', // Chữ trắng để dễ đọc trên nền tối
+        borderRadius: '12px', // Tăng độ bo tròn góc cho mềm mại
+        zIndex: 1000,
+        textAlign: 'center',
+        fontSize: '16px', // Tăng kích thước chữ để dễ đọc hơn
+        fontWeight: 'bold', // Làm chữ đậm hơn để nổi bật
+        animation: 'fade-in-out 2s ease', // Hiệu ứng mờ dần
+        opacity: 0.95, // Tạo chút hiệu ứng trong suốt nhẹ
+    },
     reportContainer: {
         padding: '20px',
         backgroundColor: '#f9f9f9',
@@ -1043,26 +1140,28 @@ const styles = {
         padding: '20px',
     },
     dropdownItem: {
-        padding: '10px',
+        padding: '5px',
+        borderRadius: '5px',
         cursor: 'pointer',
-        borderBottom: '1px solid #ddd',
-        backgroundColor: '#fff',
-        transition: 'background-color 0.2s, color 0.2s',
+        marginBottom: '5px',
+        transition: 'background-color 0.3s ease, color 0.3s ease'
     },
     processedItem: {
-        color: '#ff4d4d', // Màu đỏ cho "Đã xử lí"
+        color: '#155724', // Màu xanh đậm cho "Đã giải quyết"
+        backgroundColor: '#d4edda', // Nền xanh nhạt mặc định
         ':hover': {
-            backgroundColor: '#ffcccc', // Nền đỏ nhạt khi hover
-            color: '#ff1a1a', // Đỏ đậm hơn khi hover
-        },
+            backgroundColor: '#c3e6cb', // Nền xanh đậm hơn khi hover
+            color: '#0b2e13', // Xanh đậm khi hover
+        }
     },
     rejectedItem: {
-        color: '#ffc107', // Màu vàng cho "Bị từ chối"
+        color: '#721c24', // Màu đỏ đậm cho "Bị từ chối"
+        backgroundColor: '#f8d7da', // Nền đỏ nhạt mặc định
         ':hover': {
-            backgroundColor: '#ffe680', // Nền vàng nhạt khi hover
-            color: '#ffbf00', // Vàng đậm hơn khi hover
-        },
-    },
+            backgroundColor: '#f5c6cb', // Nền đỏ đậm hơn khi hover
+            color: '#491217', // Đỏ đậm hơn khi hover
+        }
+    }
 };
 
 

@@ -24,6 +24,10 @@ import btnProfile from './images/profile.png';
 import logo from './images/logo.png';
 import Petpost from './components/Post/Petpost';
 import Report from './components/MainContent/Report';
+import PostLink from './components/ModeratorLink/PostLink'
+import ProfileLink from './components/ModeratorLink/ProfileLink'
+import adminPNG from './images/setting.png'
+import AddModerator from './components/Admin/AddModerator'
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, cookie.load("user") || null);
@@ -72,8 +76,13 @@ const App = () => {
               <Route path="/post/:id/comments" element={<Comment />} />
               <Route path="/petpost/" element={<Petpost />} />
               <Route path="/report/:postId" element={<Report />} />
-
-
+              <Route path="/post-link/:postId" element={<PostLink />} />
+              <Route path="/profile-link/:userId" element={<ProfileLink />} />
+              <Route path='/admin' element={
+                <ProtectedRoute user={user} roleRequired={3}>
+                  <AddModerator />
+                </ProtectedRoute>
+              } />
               <Route path='/moderator' element={
                 <ProtectedRoute user={user} roleRequired={2}>
                   <Moderator />
@@ -95,10 +104,8 @@ const LocationAwareSidebar = ({ showSidebar, isActive, user }) => {
   return showSidebar ? (
     <div style={sidebarStyles}>
       <Link to="/">
-      <img src={logo} alt="LOgo" style={logoStyles}/>
-
+        <img src={logo} alt="LOgo" style={logoStyles} />
       </Link>
-
       <div style={buttonWrapperStyles}>
         <Link to="/" style={buttonLinkStyles(isActive('/', location.pathname))}>
           <img src={btnHome} alt="Trang chủ" style={iconStyles} />
@@ -114,7 +121,13 @@ const LocationAwareSidebar = ({ showSidebar, isActive, user }) => {
         </Link>
       </div>
       <div style={buttonWrapperStyles}>
-        {user?.role === 2 ? (
+        {/* Kiểm tra role của người dùng */}
+        {user?.role === 3 ? (
+          <Link to="/admin" style={buttonLinkStyles(isActive('/admin', location.pathname))}>
+            <img src={adminPNG} alt="Admin" style={iconStyles} />
+            Trang Quản lý (Admin)
+          </Link>
+        ) : user?.role === 2 ? (
           <Link to="/moderator" style={buttonLinkStyles(isActive('/moderator', location.pathname))}>
             <img src={btnProfile} alt="Moderator" style={iconStyles} />
             Trang Cá nhân (Moderator)

@@ -43,6 +43,14 @@ class UserViewSet(viewsets.ViewSet,
             return serializers.UserDetailSerializer
         return self.serializer_class
 
+    def list(self, request, *args, **kwargs):
+        """
+        API để lấy danh sách tất cả user.
+        """
+        users = self.get_queryset()
+        serializer = self.get_serializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -71,11 +79,11 @@ class UserViewSet(viewsets.ViewSet,
     def get_permissions(self):
         if self.action in ['get_list_posts', 'list_posts', 'update_cover_image']:
             return [permissions.IsAuthenticated()]
-        if self.action in ['destroy', "add_posts"]:
+        if self.action in ['destroy', 'add_posts']:
             return [perms.IsOwner()]
-        if self.action in ['add_surveys', 'destroy']:
-            return [permissions.IsAdminUser()]
-        return self.permission_classes
+        if self.action in ['add_surveys', 'destroy', 'list']:
+            return [permissions.IsAdminUser()]  # Chỉ cho phép admin
+        return super().get_permissions()  # Sử dụng các permissions mặc định
 
     @action(methods=['get'], url_path='current_user', url_name='current_user', detail=False)
     def current_user(self, request):
@@ -523,3 +531,17 @@ class PostReportViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['patch'], url_path='update-status')
+    def update_status(self, request, pk=None):
+        report = self.get_object()  # Lấy đối tượng Report cần cập nhật
+        if 'status_report' not in request.data:
+            return Response({"detail": "status_report is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Cập nhật status_report và lưu
+        report.status_report = request.data['status_report']
+        report.reviewed_by = request.user  # Gán người quản lý hiện tại là người đã xử lý báo cáo
+        report.save()
+
+        serializer = self.get_serializer(report)
+        return Response(serializer.data)
