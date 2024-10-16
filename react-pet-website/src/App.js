@@ -27,7 +27,8 @@ import Report from './components/MainContent/Report';
 import PostLink from './components/ModeratorLink/PostLink'
 import ProfileLink from './components/ModeratorLink/ProfileLink'
 import adminPNG from './images/setting.png'
-import AddModerator from './components/Admin/AddModerator'
+import Admin from './components/Admin/Admin';
+import AddModerator from './components/Admin/AddModerator';
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, cookie.load("user") || null);
@@ -78,9 +79,11 @@ const App = () => {
               <Route path="/report/:postId" element={<Report />} />
               <Route path="/post-link/:postId" element={<PostLink />} />
               <Route path="/profile-link/:userId" element={<ProfileLink />} />
+              <Route path="/add-moderator/" element={<AddModerator />} />
+
               <Route path='/admin' element={
                 <ProtectedRoute user={user} roleRequired={3}>
-                  <AddModerator />
+                  <Admin />
                 </ProtectedRoute>
               } />
               <Route path='/moderator' element={

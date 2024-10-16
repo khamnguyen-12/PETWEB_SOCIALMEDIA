@@ -30,7 +30,9 @@ class User(AbstractUser):
     note = RichTextField(null=True)
     gender = models.IntegerField(choices=Gender.choices, default=Gender.MALE)
     date_of_birth = models.DateField(null=True)
-
+    active = models.BooleanField(default=True)
+    created_date = models.DateTimeField(auto_now_add=True, null=True)
+    updated_date = models.DateTimeField(auto_now=True, null=True)
 
 
     def save(self, *args, **kwargs):

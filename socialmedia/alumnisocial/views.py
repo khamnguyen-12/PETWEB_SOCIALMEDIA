@@ -79,11 +79,11 @@ class UserViewSet(viewsets.ViewSet,
     def get_permissions(self):
         if self.action in ['get_list_posts', 'list_posts', 'update_cover_image']:
             return [permissions.IsAuthenticated()]
-        if self.action in ['destroy', 'add_posts']:
+        if self.action in ['destroy', "add_posts"]:
             return [perms.IsOwner()]
-        if self.action in ['add_surveys', 'destroy', 'list']:
-            return [permissions.IsAdminUser()]  # Chỉ cho phép admin
-        return super().get_permissions()  # Sử dụng các permissions mặc định
+        if self.action in ['add_surveys', 'destroy', 'list', 'deactivate_user']:
+            return [permissions.IsAdminUser()]
+        return self.permission_classes
 
     @action(methods=['get'], url_path='current_user', url_name='current_user', detail=False)
     def current_user(self, request):
@@ -147,6 +147,15 @@ class UserViewSet(viewsets.ViewSet,
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=['patch'], url_path='deactivate', permission_classes=[permissions.IsAdminUser])
+    def deactivate_user(self, request, pk=None):
+        try:
+            user = self.get_object()  # Lấy đối tượng user dựa trên pk
+            user.active = False  # Đặt trường active thành False
+            user.save()  # Lưu thay đổi
+            return Response({"message": "User has been deactivated."}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class PostViewSet(viewsets.ViewSet,
 

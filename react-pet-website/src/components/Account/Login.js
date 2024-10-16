@@ -78,13 +78,14 @@ const Login = ({ setShowSidebar }) => {
     const handleLoginError = (errorStatus) => {
         switch (errorStatus) {
             case 400:
-                setError("Sai tên đăng nhập hoặc mật khẩu");
+                setError(<span style={{ color: 'red' }}>Sai tên đăng nhập hoặc mật khẩu</span>);
                 break;
             default:
-                setError("Đăng nhập không thành công");
+                setError(<span style={{ color: 'red' }}>Đăng nhập không thành công</span>);
                 break;
         }
     };
+    
 
     const login = async () => {
         if (!validateForm()) {
@@ -130,7 +131,7 @@ const Login = ({ setShowSidebar }) => {
                 handleLoginError(res.status);
             }
         } catch (ex) {
-            setError("Sai tên hoặc mật khẩu, vui lòng thử lại.");
+            setError(<span style={{ color: 'red' }}>Sai tên đăng nhập hoặc mật khẩu</span>);
             setLoading(false);
         }
     };
