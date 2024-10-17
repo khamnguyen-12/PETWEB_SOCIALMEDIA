@@ -31,6 +31,7 @@
     'report' : '/report/',
     'mor_checkreport': (id) => `/report/${id}/update-status/`,
     'user' : '/users/',
+    'deactive_moderator': (id) => `/users/${id}/deactivate/`,
 }   
     
     export const authAPI = () => {

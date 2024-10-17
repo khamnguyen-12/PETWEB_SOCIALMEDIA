@@ -45,9 +45,9 @@ class UserViewSet(viewsets.ViewSet,
 
     def list(self, request, *args, **kwargs):
         """
-        API để lấy danh sách tất cả user.
+        API để lấy danh sách tất cả user sắp xếp theo created_date mới nhất.
         """
-        users = self.get_queryset()
+        users = self.get_queryset().filter(active=True).order_by('-created_date')  # Sắp xếp theo thứ tự mới nhất
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

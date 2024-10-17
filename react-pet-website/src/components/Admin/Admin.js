@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI, endpoints } from '../../configs/APIs';
 import { Button, Modal, Form } from 'react-bootstrap';
+import { MyDispatchContext } from '../../configs/MyContext';
 
+// const dispatch = useContext(MyDispatchContext);
 
 const Admin = () => {
     const [moderatorName, setModeratorName] = useState('');
@@ -17,6 +19,7 @@ const Admin = () => {
     };
 
     const handleLogout = () => {
+        // dispatch({ type: 'logout' });
         alert("Logged out!");
         navigate('/login');
     };
@@ -61,12 +64,38 @@ const Admin = () => {
             gender: parseInt(updatedGender),  // Cập nhật giá trị giới tính cho người dùng
         }));
     };
-    
+
+    const handleDeactivateUser = async (id) => {
+        try {
+            const res = await authAPI().patch(endpoints.deactive_moderator(id))
+            alert("User has been deactivated successfully.");
+            fetchUsers();  // Gọi lại hàm để làm mới danh sách người dùng
+            handleClose(); // Close the modal after successful deactivation
+        } catch (error) {
+            console.error("There was an error deactivating the user:", error);
+            alert("Failed to deactivate user.");
+        }
+    };
 
 
-    
     return (
         <div style={styles.container}>
+
+
+
+            {/* Hiển thị avatar người dùng */}
+            {selectedUser && selectedUser.avatar ? (
+                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                    <img
+                        src={selectedUser.avatar}  // URL của avatar người dùng
+                        alt="User Avatar"
+                        style={{ width: '80px', height: '80px', borderRadius: '50%' }} // Tạo hình tròn cho avatar
+                    />
+                </div>
+            ) : (
+                <p style={{ textAlign: 'center', marginBottom: '10px' }}>No Avatar</p>
+            )}
+            
             {/* Sidebar bên phải */}
             <div style={styles.sidebar}>
                 <ul style={styles.sidebarUl}>
@@ -200,9 +229,13 @@ const Admin = () => {
                 </Modal.Body>
                 <Modal.Footer>
 
-                    
+
                     <Button variant="secondary" onClick={handleClose}>
                         Đóng
+                    </Button>
+
+                    <Button variant="danger" onClick={() => handleDeactivateUser(selectedUser.id)}>
+                        Xóa người dùng
                     </Button>
                 </Modal.Footer>
             </Modal>
