@@ -29,171 +29,246 @@ import ProfileLink from './components/ModeratorLink/ProfileLink'
 import adminPNG from './images/setting.png'
 import Admin from './components/Admin/Admin';
 import AddModerator from './components/Admin/AddModerator';
+import LoginBtn from './components/oauth2/login';
+import LogoutBtn from './components/oauth2/logout';
+import { gapi } from 'gapi-script';
+
+const clientID = "29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com";
+
+
+
 
 const App = () => {
   const [user, dispatch] = useReducer(MyUserReducer, cookie.load("user") || null);
   const [showSidebar, setShowSidebar] = useState(false);
 
+  // useEffect(() => {
+  //   if (user) {
+  //     setShowSidebar(true);
+  //   } else {
+  //     setShowSidebar(false);
+  //   }
+  // }, [user]);
+
+
   useEffect(() => {
-    if (user) {
-      setShowSidebar(true);
-    } else {
-      setShowSidebar(false);
+    function start() {
+      gapi.client.init({
+        clientID: clientID,
+        scope: ""
+      })
     }
-  }, [user]);
+    gapi.load('client:auth2', start);
+  });
 
-  const ProtectedRoute = ({ user, roleRequired, children }) => {
-    if (!user || user.role !== roleRequired) {
-      return <Navigate to="/" replace />
-    }
+return (
+  <div className='App'>
+    <LoginBtn />
 
-    return children;
-  }
+    <LogoutBtn />
 
-  const isActive = (path, currentPath) => path === currentPath;
-
-  return (
-    <SnackbarProvider maxSnack={3}>
-      <BrowserRouter>
-        <MyUserContext.Provider value={user}>
-          <MyDispatchContext.Provider value={dispatch}>
-            <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
-
-            <Routes>
-              <Route
-                exact
-                path='/'
-                element={user ? <MainContent /> : <Navigate to="/login" replace />}
-              />
-              <Route
-                path='/login'
-                element={
-                  <Login />
-                }
-              />
-              <Route path='/signup' element={<Signup />} />
-              <Route path='/profile' element={<Profile />} />
-              <Route path="/post/:id" element={<DetailPost />} />
-              <Route path="/post/:id/comments" element={<Comment />} />
-              <Route path="/petpost/" element={<Petpost />} />
-              <Route path="/report/:postId" element={<Report />} />
-              <Route path="/post-link/:postId" element={<PostLink />} />
-              <Route path="/profile-link/:userId" element={<ProfileLink />} />
-              <Route path="/add-moderator/" element={<AddModerator />} />
-
-              <Route path='/admin' element={
-                <ProtectedRoute user={user} roleRequired={3}>
-                  <Admin />
-                </ProtectedRoute>
-              } />
-              <Route path='/moderator' element={
-                <ProtectedRoute user={user} roleRequired={2}>
-                  <Moderator />
-                </ProtectedRoute>
-              } />
-            </Routes>
-            {!user && <Footer />}
-          </MyDispatchContext.Provider>
-        </MyUserContext.Provider>
-      </BrowserRouter>
-    </SnackbarProvider>
-  );
-};
-
-// Component xử lý Sidebar với useLocation
-const LocationAwareSidebar = ({ showSidebar, isActive, user }) => {
-  const location = useLocation(); // Đặt useLocation trong BrowserRouter ngữ cảnh đúng
-
-  return showSidebar ? (
-    <div style={sidebarStyles}>
-      <Link to="/">
-        <img src={logo} alt="LOgo" style={logoStyles} />
-      </Link>
-      <div style={buttonWrapperStyles}>
-        <Link to="/" style={buttonLinkStyles(isActive('/', location.pathname))}>
-          <img src={btnHome} alt="Trang chủ" style={iconStyles} />
-          Trang chủ
-        </Link>
-        <Link to="/petpost/" style={buttonLinkStyles(isActive('/learn', location.pathname))}>
-          <img src={btnLearn} alt="Kiến thức" style={iconStyles} />
-          Kiến thức
-        </Link>
-        <Link to="/zoo" style={buttonLinkStyles(isActive('/zoo', location.pathname))}>
-          <img src={btnZoo} alt="Vườn thú" style={iconStyles} />
-          Vườn thú
-        </Link>
-      </div>
-      <div style={buttonWrapperStyles}>
-        {/* Kiểm tra role của người dùng */}
-        {user?.role === 3 ? (
-          <Link to="/admin" style={buttonLinkStyles(isActive('/admin', location.pathname))}>
-            <img src={adminPNG} alt="Admin" style={iconStyles} />
-            Trang Quản lý (Admin)
-          </Link>
-        ) : user?.role === 2 ? (
-          <Link to="/moderator" style={buttonLinkStyles(isActive('/moderator', location.pathname))}>
-            <img src={btnProfile} alt="Moderator" style={iconStyles} />
-            Trang Cá nhân (Moderator)
-          </Link>
-        ) : (
-          <Link to="/profile" style={buttonLinkStyles(isActive('/profile', location.pathname))}>
-            <img src={btnProfile} alt="Trang Cá nhân" style={iconStyles} />
-            Trang Cá nhân
-          </Link>
-        )}
-      </div>
-    </div>
-  ) : (
-    <Navbar />
-  );
-};
-
-// Các style cho Sidebar và link button
-const buttonLinkStyles = (isActive) => ({
-  display: 'flex',
-  width: '100%',
-  padding: '10px 20px',
-  textDecoration: 'none',
-  color: isActive ? '#fff' : '#007bff',
-  fontSize: '18px',
-  backgroundColor: isActive ? '#1769ff' : '#e9ecef',
-  borderRadius: '33px',
-  margin: '10px 0',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-});
-
-const sidebarStyles = {
-  background: 'linear-gradient(66deg, #1ab7ea, #1769ff)',
-  position: 'fixed',
-  top: '15px',
-  left: '200px',
-  width: '200px',
-  height: '75%',
-  padding: '20px',
-  boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  borderRadius: '33px',
-  justifyContent: 'center',
-};
-const logoStyles = {
-  width: '150px', // Kích thước logo
-  marginBottom: '10px', // Khoảng cách dưới logo
-  borderRadius: '33px',
-
-};
-const iconStyles = {
-  width: '20px',
-  height: '20px',
-  marginRight: '10px',
-};
-
-const buttonWrapperStyles = {
-  width: '100%',
-  textAlign: 'center',
-  marginBottom: '20px',
-};
-
+  </div>
+)
+}
 export default App;
+
+  // const ProtectedRoute = ({ user, roleRequired, children }) => {
+  //   if (!user || user.role !== roleRequired) {
+  //     return <Navigate to="/" replace />
+  //   }
+
+  //   return children;
+  // }
+
+  // const isActive = (path, currentPath) => path === currentPath;
+
+  //   return (
+  //     <SnackbarProvider maxSnack={3}>
+  //       <BrowserRouter>
+  //         <MyUserContext.Provider value={user}>
+  //           <MyDispatchContext.Provider value={dispatch}>
+  //             <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
+
+  //             <Routes>
+  //               <Route
+  //                 exact
+  //                 path='/'
+  //                 element={user ? <MainContent /> : <Navigate to="/login" replace />}
+  //               />
+  //               <Route
+  //                 path='/login'
+  //                 element={
+  //                   <Login />
+  //                 }
+  //               />
+  //               <Route path='/signup' element={<Signup />} />
+  //               <Route path='/profile' element={<Profile />} />
+  //               <Route path="/post/:id" element={<DetailPost />} />
+  //               <Route path="/post/:id/comments" element={<Comment />} />
+  //               <Route path="/petpost/" element={<Petpost />} />
+  //               <Route path="/report/:postId" element={<Report />} />
+  //               <Route path="/post-link/:postId" element={<PostLink />} />
+  //               <Route path="/profile-link/:userId" element={<ProfileLink />} />
+  //               <Route path="/add-moderator/" element={<AddModerator />} />
+
+  //               <Route path='/admin' element={
+  //                 <ProtectedRoute user={user} roleRequired={3}>
+  //                   <Admin />
+  //                 </ProtectedRoute>
+  //               } />
+  //               <Route path='/moderator' element={
+  //                 <ProtectedRoute user={user} roleRequired={2}>
+  //                   <Moderator />
+  //                 </ProtectedRoute>
+  //               } />
+  //             </Routes>
+  //             {!user && <Footer />}
+  //           </MyDispatchContext.Provider>
+  //         </MyUserContext.Provider>
+  //       </BrowserRouter>
+  //     </SnackbarProvider>
+  //   );
+  // };
+
+  // // Component xử lý Sidebar với useLocation
+  // const LocationAwareSidebar = ({ showSidebar, isActive, user }) => {
+  //   const location = useLocation(); // Đặt useLocation trong BrowserRouter ngữ cảnh đúng
+
+  //   return showSidebar ? (
+  //     <div style={sidebarStyles}>
+  //       <Link to="/">
+  //         <img src={logo} alt="LOgo" style={logoStyles} />
+  //       </Link>
+  //       <div style={buttonWrapperStyles}>
+  //         <Link to="/" style={buttonLinkStyles(isActive('/', location.pathname))}>
+  //           <img src={btnHome} alt="Trang chủ" style={iconStyles} />
+  //           Trang chủ
+  //         </Link>
+  //         <Link to="/petpost/" style={buttonLinkStyles(isActive('/learn', location.pathname))}>
+  //           <img src={btnLearn} alt="Kiến thức" style={iconStyles} />
+  //           Kiến thức
+  //         </Link>
+  //         <Link to="/zoo" style={buttonLinkStyles(isActive('/zoo', location.pathname))}>
+  //           <img src={btnZoo} alt="Vườn thú" style={iconStyles} />
+  //           Vườn thú
+  //         </Link>
+  //       </div>
+  //       <div style={buttonWrapperStyles}>
+  //         {/* Kiểm tra role của người dùng */}
+  //         {user?.role === 3 ? (
+  //           <Link to="/admin" style={buttonLinkStyles(isActive('/admin', location.pathname))}>
+  //             <img src={adminPNG} alt="Admin" style={iconStyles} />
+  //             Trang Quản lý (Admin)
+  //           </Link>
+  //         ) : user?.role === 2 ? (
+  //           <Link to="/moderator" style={buttonLinkStyles(isActive('/moderator', location.pathname))}>
+  //             <img src={btnProfile} alt="Moderator" style={iconStyles} />
+  //             Trang Cá nhân (Moderator)
+  //           </Link>
+  //         ) : (
+  //           <Link to="/profile" style={buttonLinkStyles(isActive('/profile', location.pathname))}>
+  //             <img src={btnProfile} alt="Trang Cá nhân" style={iconStyles} />
+  //             Trang Cá nhân
+  //           </Link>
+  //         )}
+  //       </div>
+  //     </div>
+  //   ) : (
+  //     <Navbar />
+  //   );
+  // };
+
+  // // Các style cho Sidebar và link button
+  // const buttonLinkStyles = (isActive) => ({
+  //   display: 'flex',
+  //   width: '100%',
+  //   padding: '10px 20px',
+  //   textDecoration: 'none',
+  //   color: isActive ? '#fff' : '#007bff',
+  //   fontSize: '18px',
+  //   backgroundColor: isActive ? '#1769ff' : '#e9ecef',
+  //   borderRadius: '33px',
+  //   margin: '10px 0',
+  //   alignItems: 'center',
+  //   justifyContent: 'flex-start',
+  // });
+
+  // const sidebarStyles = {
+  //   background: 'linear-gradient(66deg, #1ab7ea, #1769ff)',
+  //   position: 'fixed',
+  //   top: '15px',
+  //   left: '200px',
+  //   width: '200px',
+  //   height: '75%',
+  //   padding: '20px',
+  //   boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
+  //   display: 'flex',
+  //   flexDirection: 'column',
+  //   alignItems: 'flex-start',
+  //   borderRadius: '33px',
+  //   justifyContent: 'center',
+  // };
+  // const logoStyles = {
+  //   width: '150px', // Kích thước logo
+  //   marginBottom: '10px', // Khoảng cách dưới logo
+  //   borderRadius: '33px',
+
+  // };
+  // const iconStyles = {
+  //   width: '20px',
+  //   height: '20px',
+  //   marginRight: '10px',
+  // };
+
+  // const buttonWrapperStyles = {
+  //   width: '100%',
+  //   textAlign: 'center',
+  //   marginBottom: '20px',
+  // };
+
+  // export default App;
+
+
+
+
+
+// import Login from "./components/auth/login";
+// import Register from "./components/auth/register";
+// import React from 'react';
+
+// import Header from "./components/header";
+// import Home from "./components/home";
+
+// import { useRoutes } from "react-router-dom";
+// import { AuthProvider } from "./components/contexts/authContext";
+
+// function App() {
+//   const routesArray = [
+//     {
+//       path: "*",
+//       element: <Login />,
+//     },
+//     {
+//       path: "/login",
+//       element: <Login />,
+//     },
+//     {
+//       path: "/register",
+//       element: <Register />,
+//     },
+//     {
+//       path: "/home",
+//       element: <Home />,
+//     },
+//   ];
+//   let routesElement = useRoutes(routesArray);
+//   return (
+//     <AuthProvider>
+//       <Header />
+//       <div className="w-full h-screen flex flex-col">{routesElement}</div>
+//     </AuthProvider>
+//   );
+// }
+
+// export default App;
+
