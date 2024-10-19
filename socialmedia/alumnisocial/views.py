@@ -1,5 +1,6 @@
 from urllib import request
 
+from allauth.socialaccount.providers import google
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
@@ -11,7 +12,7 @@ from rest_framework.exceptions import NotFound
 from .models import *
 from django.http import HttpResponse, JsonResponse
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from django.db.models import Q
 from rest_framework.generics import get_object_or_404
 from django.core.mail import send_mail
@@ -24,7 +25,8 @@ from . import serializers, perms, paginators, mixins, dao
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CoverImageUpdateSerializer, CommentSerializer, UserInteractionSerializer
-
+from google.oauth2 import id_token
+from google.auth.transport import requests  # Đảm bảo rằng bạn đã import requests
 
 # chỉnh thành ModelViewset
 class UserViewSet(viewsets.ViewSet,
@@ -123,7 +125,6 @@ class UserViewSet(viewsets.ViewSet,
         serializer = serializers.PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
     @action(methods=['GET'], detail=False, url_path='search')
     def search(self, request):
         users = dao.search_people(params=request.GET)
@@ -156,6 +157,45 @@ class UserViewSet(viewsets.ViewSet,
             return Response({"message": "User has been deactivated."}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+    # Tích hợp API đăng nhập Google trong UserViewSet
+    @action(methods=['POST'], detail=False, url_path='login-google')
+    def login_google(self, request):
+        token_id = request.data.get("tokenId")
+
+        if not token_id:
+            return Response({"error": "Token ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Xác thực token từ Google
+            request_session = requests.Request()  # Sử dụng từ google-auth
+            id_info = id_token.verify_oauth2_token(token_id, request_session)  # Sử dụng google.oauth2
+
+            # Lấy thông tin người dùng từ token
+            email = id_info.get("email")
+            first_name = id_info.get("given_name")
+            last_name = id_info.get("family_name")
+            avatar_url = id_info.get("picture")
+
+            # Tìm hoặc tạo người dùng
+            user, created = User.objects.get_or_create(email=email, defaults={
+                'first_name': first_name,
+                'last_name': last_name,
+                'username': email.split('@')[0],  # Bạn có thể thay đổi logic username
+            })
+
+            if created:
+                # Nếu người dùng mới, bạn có thể thiết lập các trường mặc định khác, ví dụ:
+                user.avatar = avatar_url
+                user.save()
+
+            # Tạo response chứa thông tin người dùng
+            serializer = self.get_serializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except ValueError:
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
 class PostViewSet(viewsets.ViewSet,
 
@@ -313,6 +353,7 @@ class CommentViewSet(viewsets.ViewSet,
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=True, methods=['get'], url_path='list-comments')
     def list_comments(self, request, pk=None):
         """API để lấy danh sách comment của bài viết theo id (pk là id của bài viết)"""
@@ -366,6 +407,7 @@ class CommentViewSet(viewsets.ViewSet,
         except Comment.DoesNotExist:
             return Response({'error': 'Comment không tồn tại'}, status=status.HTTP_404_NOT_FOUND)
 
+
 class ReactionViewSet(viewsets.ModelViewSet):
     queryset = Reaction.objects.all()
     serializer_class = serializers.ReactionSerializer
@@ -382,7 +424,6 @@ class ReactionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
@@ -393,8 +434,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Category.objects.filter(active=True)
-
-
 
     @action(detail=True, methods=['patch'], url_path='update-name')
     def update_name(self, request, pk=None):
@@ -420,7 +459,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
                 'success': False,
                 'message': 'Name field is required'
             }, status=status.HTTP_400_BAD_REQUEST)
-
 
     # Custom PATCH method to set 'active' to False
     @action(detail=True, methods=['patch'], url_path='deactivate')

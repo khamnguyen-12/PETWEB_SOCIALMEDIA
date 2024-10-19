@@ -21,5 +21,6 @@ urlpatterns = [
     # path('login/', views.LoginView.as_view(), name='login'),
     # path('register/', views.RegisterView.as_view(), name='register'),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('accounts/', include('allauth.urls')),  # URL cho các endpoint của allauth
 
 ]

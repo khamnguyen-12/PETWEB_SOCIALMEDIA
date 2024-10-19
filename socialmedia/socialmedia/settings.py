@@ -61,6 +61,10 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'django.contrib.sites',  # Required for django-oauth-toolkit
     'corsheaders',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 
 ]
 
@@ -73,20 +77,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
-# lỏa
-# OAUTH2_PROVIDER = {'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore'}
-
-
-# OAuth2 Provider settings
-# OAUTH2_PROVIDER = {
-#     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore',
-#     'SCOPES': {'read': 'Read scope', 'write': 'Write scope'},
-#     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
-#     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 600,
-#     'OIDC_ENABLED': False,
-#     'GRANT_TYPES': ['authorization_code', 'password', 'client_credentials', 'refresh_token'],
-# }
-
 
 
 # MTien
@@ -116,6 +106,7 @@ MIDDLEWARE = [
     # 'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 
 ]
 CORS_ALLOWED_ORIGINS = [
@@ -128,7 +119,24 @@ CORS_ALLOW_ALL_ORIGINS = True
 AUTHENTICATION_BACKENDS = (
     'oauth2_provider.backends.OAuth2Backend',
     'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',  # Cần cho django-allauth
+
 )
+
+SITE_ID = 1  # Đảm bảo giá trị SITE_ID được thiết lập đúng
+
+
+# Cấu hình Google OAuth2
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': '29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com',
+            'secret': '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',
+            'key': ''
+        }
+    }
+}
+
 
 ROOT_URLCONF = 'socialmedia.urls'
 

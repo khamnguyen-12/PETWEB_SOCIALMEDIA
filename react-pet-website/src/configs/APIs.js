@@ -32,6 +32,7 @@
     'mor_checkreport': (id) => `/report/${id}/update-status/`,
     'user' : '/users/',
     'deactive_moderator': (id) => `/users/${id}/deactivate/`,
+    'login-google' : '/users/login-google/',
 }   
     
     export const authAPI = () => {

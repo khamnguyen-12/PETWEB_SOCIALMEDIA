@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Modal } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Modal, Alert } from 'react-bootstrap';
 import APIs, { endpoints } from '../../configs/APIs';
 // import styled, { keyframes } from 'styled-components';
 

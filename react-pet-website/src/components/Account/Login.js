@@ -9,7 +9,10 @@ import backgroundImg from '../../images/login3.jpg'; // Import the image
 import friendImg from '../../images/friend.png'
 import giftBoxImg from '../../images/giftbox.png'
 import earthImg from '../../images/earth.png'
+import GoogleLogin from 'react-google-login';  // Import GoogleLogin
+import 'bootstrap/dist/css/bootstrap.min.css';
 
+const clientId = "29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com";
 
 const typewriterTexts = [" Chó", " Mèo", " Chim", " Hamster"];
 
@@ -85,7 +88,7 @@ const Login = ({ setShowSidebar }) => {
                 break;
         }
     };
-    
+
 
     const login = async () => {
         if (!validateForm()) {
@@ -118,9 +121,9 @@ const Login = ({ setShowSidebar }) => {
                     "payload": userdata.data
                 });
 
-                if(userdata.data.role === 2 ){
+                if (userdata.data.role === 2) {
                     nav("/moderator");
-                } else{
+                } else {
                     nav("/moderator");
                 }
 
@@ -140,6 +143,39 @@ const Login = ({ setShowSidebar }) => {
         nav("/signup");
     };
 
+
+    const onSuccessGoogleLogin = async (response) => {
+        const tokenId = response.tokenId;
+        try {
+            // Gửi tokenId của Google tới backend để tạo tài khoản hoặc đăng nhập
+            let res = await APIs.post(endpoints['login-google'], {
+                tokenId
+            });
+            if (res.status === 200) {
+                console.log("Res data: ", res.data)
+                cookie.save("token", res.data.access_token);
+                let userdata = await authAPI().get(endpoints['current_user']);
+                cookie.save('user', userdata.data);
+                dispatch({
+                    "type": "login",
+                    "payload": userdata.data
+                });
+                setShowSidebar(true);
+                nav("/");
+            } else {
+                setError('Đăng nhập Google không thành công');
+            }
+        } catch (err) {
+            console.error("Google login error: ", err);
+            setError('Lỗi đăng nhập bằng Google');
+        }
+    };
+
+    const onFailureGoogleLogin = (response) => {
+        console.log("Google login failed: ", response);
+        setError('Đăng nhập Google thất bại');
+    };
+
     return (
         <>
             <Container
@@ -149,7 +185,7 @@ const Login = ({ setShowSidebar }) => {
             >
                 <div style={styles.headerText}>
                     Mạng xã hội hữu ích
-                    <br /> cho người yêu 
+                    <br /> cho người yêu
                     <span style={styles.typewriterText}>
                         {displayedText}
                         <span style={styles.blinkingCursor}> </span>
@@ -206,6 +242,18 @@ const Login = ({ setShowSidebar }) => {
                             >
                                 {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                             </Button>
+
+                            {/* Nút đăng nhập bằng Google */}
+                            <div className="text-center mt-3">
+                                <GoogleLogin
+                                    clientId={clientId}
+                                    buttonText="Đăng nhập bằng Google"
+                                    onSuccess={onSuccessGoogleLogin}
+                                    onFailure={onFailureGoogleLogin}
+                                    cookiePolicy={'single_host_origin'}
+                                />
+                            </div>
+
 
                             <div className="text-center mt-3">
                                 <a href="#" onClick={register} style={styles.registerLink}>
