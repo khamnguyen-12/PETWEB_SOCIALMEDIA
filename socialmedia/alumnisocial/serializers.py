@@ -168,3 +168,4 @@ class PostReportSerializer(serializers.ModelSerializer):
         # Gán tự động người dùng làm người báo cáo
         validated_data['reporter'] = self.context['request'].user
         return super().create(validated_data)
+

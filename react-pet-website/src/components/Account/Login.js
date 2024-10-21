@@ -146,22 +146,96 @@ const Login = ({ setShowSidebar }) => {
 
     const onSuccessGoogleLogin = async (response) => {
         const tokenId = response.tokenId;
+        const accessToken = response.accessToken;  // Lấy access token từ phản hồi của Google
+        const email = response.profileObj.email;   // Lấy email từ Google login response
+
         try {
-            // Gửi tokenId của Google tới backend để tạo tài khoản hoặc đăng nhập
-            let res = await APIs.post(endpoints['login-google'], {
-                tokenId
+            console.log("Token ID: ", tokenId);  // Kiểm tra tokenId nhận được từ Google
+
+            // Thực hiện đăng nhập Google trước để lấy email
+            let googleLoginRes = await APIs.post(endpoints['login-google'], {
+                tokenId,
+                accessToken // Gửi cả accessToken tới backend
             });
-            if (res.status === 200) {
-                console.log("Res data: ", res.data)
-                cookie.save("token", res.data.access_token);
-                let userdata = await authAPI().get(endpoints['current_user']);
-                cookie.save('user', userdata.data);
-                dispatch({
-                    "type": "login",
-                    "payload": userdata.data
-                });
-                setShowSidebar(true);
-                nav("/");
+
+            console.log("Status googleLoginRes", googleLoginRes.status)
+
+            if (googleLoginRes.status === 200) {
+                const userEmailFromGoogle = googleLoginRes.data.user.email;  // Lấy email từ Google
+                console.log("Google login success. Email: ", userEmailFromGoogle);
+
+                // Lưu token từ hệ thống sau khi đăng nhập Google thành công
+                cookie.save("token", googleLoginRes.data.access_token, { path: '/' });
+
+                // Sau khi lấy được email từ Google, kiểm tra xem email này có tồn tại trong hệ thống không
+                let emailCheckRes = await APIs.post(endpoints['check_email_exist'], { email: userEmailFromGoogle, password: "111" });
+                
+                console.log("Status emailCheckRes", emailCheckRes.status)
+
+
+
+                if (emailCheckRes.status === 200 && emailCheckRes.data.exists) {
+                    // Nếu email đã tồn tại trong hệ thống, thực hiện đăng nhập bằng username
+                    const username = emailCheckRes.data.username;
+
+                    console.log("Email tồn tại trong hệ thống:", emailCheckRes.data);
+                    console.log("Username tương ứng:", username);
+
+                    // Đăng nhập với username
+                    let loginRes = await APIs.post(endpoints['login'], {
+                        'username': username,
+                        'password': '111',  // Mật khẩu mặc định
+                        'client_id': "WqSXjpJFCwdImp5Akdcou8atIxQcmAyLK5fjLWoN",
+                        'client_secret': "H5aeBg6Y81eXR0o5DOaskJVKOySfFxYsUuEMqjSxvu3UM7vZWJQG7WmbejXktDmy2mMc6OuXysdSHLwHlXBvTyZC5q8Z7dejJXVbsmO1u0VGG64YxO6qCWzTQRKkEl9w",
+                        'grant_type': "password",  // Hoặc grant_type thích hợp
+                    });
+
+                    console.log("Status loginRes:", loginRes.status);
+
+
+
+                    if (loginRes.status === 200) {
+                        console.log("Đăng nhập thành công với username:", username);
+                        console.log("Access token từ hệ thống:", loginRes.data.access_token);
+                         cookie.save("token", loginRes.data.access_token, { path: '/' });
+
+                        // Lấy thông tin người dùng
+                        let userdata = await authAPI().get(endpoints['current_user']);
+
+
+                        console.log("Status userdata BE ", userdata.status)
+                        
+                        console.log("Thông tin người dùng sau khi đăng nhập:", userdata.data);
+
+
+                        cookie.save('user', userdata.data);
+
+                        dispatch({
+                            "type": "login",
+                            "payload": userdata.data
+                        });
+
+                        setShowSidebar(true);  // Đảm bảo setShowSidebar không bị lỗi
+                        nav("/");
+                    } else {
+                        console.log("Đăng nhập bằng username thất bại:", loginRes);
+                        setError('Đăng nhập không thành công');
+                    }
+                } else {
+                    // Nếu email không tồn tại trong hệ thống, xử lý bình thường bằng Google
+                    console.log("Email chưa tồn tại trong hệ thống, tiếp tục dùng Google login.");
+
+                    let userdata = await authAPI().get(endpoints['current_user']);
+                    cookie.save('user', userdata.data);
+
+                    dispatch({
+                        "type": "login",
+                        "payload": userdata.data
+                    });
+
+                    setShowSidebar(true);  // Đảm bảo setShowSidebar không bị lỗi
+                    nav("/");
+                }
             } else {
                 setError('Đăng nhập Google không thành công');
             }
@@ -170,6 +244,8 @@ const Login = ({ setShowSidebar }) => {
             setError('Lỗi đăng nhập bằng Google');
         }
     };
+
+
 
     const onFailureGoogleLogin = (response) => {
         console.log("Google login failed: ", response);

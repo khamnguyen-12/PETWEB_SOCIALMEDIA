@@ -33,6 +33,7 @@
     'user' : '/users/',
     'deactive_moderator': (id) => `/users/${id}/deactivate/`,
     'login-google' : '/users/login-google/',
+    'check_email_exist' : '/users/check-email/',
 }   
     
     export const authAPI = () => {
@@ -45,6 +46,7 @@
                 'Authorization': `Bearer ${token}`
             }
         });
+
     }
 
     export default axios.create({

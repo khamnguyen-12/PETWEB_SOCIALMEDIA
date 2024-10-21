@@ -1,9 +1,10 @@
 from urllib import request
 
-from allauth.socialaccount.providers import google
+from django.contrib.sites import requests
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
+# from google.oauth2.credentials.Credentials import id_token
 from oauth2_provider.models import RefreshToken
 from oauth2_provider.views import TokenView
 from rest_framework import generics, viewsets, parsers, permissions, generics, status
@@ -12,7 +13,7 @@ from rest_framework.exceptions import NotFound
 from .models import *
 from django.http import HttpResponse, JsonResponse
 from rest_framework.response import Response
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action
 from django.db.models import Q
 from rest_framework.generics import get_object_or_404
 from django.core.mail import send_mail
@@ -25,8 +26,10 @@ from . import serializers, perms, paginators, mixins, dao
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CoverImageUpdateSerializer, CommentSerializer, UserInteractionSerializer
+from .utils import generate_access_token
 from google.oauth2 import id_token
 from google.auth.transport import requests  # Đảm bảo rằng bạn đã import requests
+
 
 # chỉnh thành ModelViewset
 class UserViewSet(viewsets.ViewSet,
@@ -74,9 +77,23 @@ class UserViewSet(viewsets.ViewSet,
         return JsonResponse({'exists': exists})
 
     def check_email(request):
-        email = request.GET.get('email', None)
-        exists = User.objects.filter(email=email).exists()
-        return JsonResponse({'exists': exists})
+        email = request.data.get('email', None)
+
+        if email:
+            try:
+                user = User.objects.get(email=email)
+                return Response({
+                    "exists": True,
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email
+                    }
+                })
+            except User.DoesNotExist:
+                return Response({"exists": False})
+
+        return Response({"error": "Email not provided"}, status=400)
 
     def get_permissions(self):
         if self.action in ['get_list_posts', 'list_posts', 'update_cover_image']:
@@ -158,47 +175,79 @@ class UserViewSet(viewsets.ViewSet,
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-
     # Tích hợp API đăng nhập Google trong UserViewSet
     @action(methods=['POST'], detail=False, url_path='login-google')
     def login_google(self, request):
         token_id = request.data.get("tokenId")
+        access_token = request.data.get("accessToken")
 
-        if not token_id:
-            return Response({"error": "Token ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not token_id or not access_token:
+            return Response({"error": "Token ID and Access Token are required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Xác thực token từ Google
-            request_session = requests.Request()  # Sử dụng từ google-auth
-            id_info = id_token.verify_oauth2_token(token_id, request_session)  # Sử dụng google.oauth2
+            request_session = requests.Request()
+            id_info = id_token.verify_oauth2_token(token_id, request_session)
 
-            # Lấy thông tin người dùng từ token
             email = id_info.get("email")
             first_name = id_info.get("given_name")
             last_name = id_info.get("family_name")
             avatar_url = id_info.get("picture")
 
-            # Tìm hoặc tạo người dùng
             user, created = User.objects.get_or_create(email=email, defaults={
                 'first_name': first_name,
                 'last_name': last_name,
-                'username': email.split('@')[0],  # Bạn có thể thay đổi logic username
+                'username': email.split('@')[0],
             })
 
             if created:
-                # Nếu người dùng mới, bạn có thể thiết lập các trường mặc định khác, ví dụ:
                 user.avatar = avatar_url
                 user.save()
 
-            # Tạo response chứa thông tin người dùng
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Tạo access token
+            access_token = generate_access_token(user)
+
+            return Response({
+                "user": self.get_serializer(user).data,
+                "access_token": access_token  # Trả về access token cho frontend
+            }, status=status.HTTP_200_OK)
 
         except ValueError:
             return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
-class PostViewSet(viewsets.ViewSet,
+    # Phương thức kiểm tra email
+    from django.contrib.auth import authenticate
 
+    @action(detail=False, methods=['post'], url_path='check-email')
+    def check_email(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')  # Lấy password từ request (nếu cần kiểm tra)
+
+        if not email:
+            return Response({"detail": "Email không được để trống."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not password:
+            return Response({"detail": "Password không được để trống."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Kiểm tra xem email có tồn tại trong CSDL hay không
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            # Kiểm tra mật khẩu thông qua hàm authenticate của Django
+            user_auth = authenticate(username=user.username, password=password)
+            if user_auth:
+                return Response({
+                    "exists": True,
+                    "detail": "Email và mật khẩu hợp lệ.",
+                    "username": user.username  # Trả về username của user
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({"exists": True, "detail": "Mật khẩu không đúng."}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({"exists": False, "detail": "Email chưa tồn tại."}, status=status.HTTP_200_OK)
+
+
+class PostViewSet(viewsets.ViewSet,
                   generics.ListAPIView,
                   generics.UpdateAPIView,
                   generics.RetrieveAPIView,
@@ -592,3 +641,5 @@ class PostReportViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(report)
         return Response(serializer.data)
+
+

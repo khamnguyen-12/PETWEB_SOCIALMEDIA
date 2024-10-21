@@ -14,6 +14,7 @@ r.register('categories', views.CategoryViewSet, basename='categories')
 r.register('topics', views.TopicViewSet, basename='topics')
 r.register('report', views.PostReportViewSet, basename='report')
 
+
 # r.register('notifications', views.NotificationViewSet, basename='notifications')
 
 urlpatterns = [
@@ -21,6 +22,5 @@ urlpatterns = [
     # path('login/', views.LoginView.as_view(), name='login'),
     # path('register/', views.RegisterView.as_view(), name='register'),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
-    path('accounts/', include('allauth.urls')),  # URL cho các endpoint của allauth
 
 ]
