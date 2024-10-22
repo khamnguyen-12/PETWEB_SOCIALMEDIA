@@ -188,11 +188,16 @@ const Login = ({ setShowSidebar }) => {
                         'client_id': "WqSXjpJFCwdImp5Akdcou8atIxQcmAyLK5fjLWoN",
                         'client_secret': "H5aeBg6Y81eXR0o5DOaskJVKOySfFxYsUuEMqjSxvu3UM7vZWJQG7WmbejXktDmy2mMc6OuXysdSHLwHlXBvTyZC5q8Z7dejJXVbsmO1u0VGG64YxO6qCWzTQRKkEl9w",
                         'grant_type': "password",  // Hoặc grant_type thích hợp
+                    }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
                     });
-
-                    console.log("Status loginRes:", loginRes.status);
-
-
+                    console.log("Data sent loginRes:", loginRes.data);
+                    console.log("Status loginRes", loginRes.status);
+                    console.log("Access token từ hệ thống:", loginRes.data.access_token);
+        
+        
 
                     if (loginRes.status === 200) {
                         console.log("Đăng nhập thành công với username:", username);
@@ -238,10 +243,22 @@ const Login = ({ setShowSidebar }) => {
                 }
             } else {
                 setError('Đăng nhập Google không thành công');
+                console.log("Google login error details:", error.response.data);
+
             }
         } catch (err) {
-            console.error("Google login error: ", err);
-            setError('Lỗi đăng nhập bằng Google');
+            if (error.response) {
+                // Kiểm tra chi tiết phản hồi lỗi
+                console.error("Error status:", error.response.status);
+                console.error("Error data:", error.response.data);
+                console.error("Error headers:", error.response.headers);
+            } else if (error.request) {
+                // Trường hợp không nhận được phản hồi từ server
+                console.error("No response received from server:", error.request);
+            } else {
+                // Lỗi phát sinh trong quá trình xử lý request
+                console.error("Error occurred during request:", error.message);
+            }
         }
     };
 
@@ -453,6 +470,7 @@ const styles = {
         fontSize: '40px',
         fontWeight: 'bold',
         fontFamily: "'Roboto', sans-serif",  // Font Roboto
+        paddingLeft: '10px',
     },
     blinkingCursor: {
         display: 'inline-block',

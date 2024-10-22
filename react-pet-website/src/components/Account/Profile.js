@@ -225,7 +225,7 @@ const Profile = () => {
                 <h2 style={styles.userName}>
                     {userData.first_name} {userData.last_name}
                 </h2>
-                <p style={styles.email}>{userData.email}</p>
+                <p style={styles.email}>" {userData.note} "</p>
             </div>
 
             <div style={styles.userMenu} onClick={toggleLogout} ref={logoutRef}>
@@ -306,10 +306,13 @@ const Profile = () => {
                     </>
                 ) : (
                     <>
-                        <h3 style={styles.detailItem}><strong>Ghi chú:</strong> {userData.note || "Không có ghi chú"}</h3>
+                        {/* <h3 style={styles.detailItem}><strong>Ghi chú:</strong> {userData.note || "Không có ghi chú"}</h3> */}
                         <h3 style={styles.detailItem}><strong>Bạn sinh vào:</strong> {new Date(userData.date_of_birth).toLocaleDateString()}</h3>
                         <h3 style={styles.detailItem}><strong>Giới tính:</strong> {getGenderName(userData.gender)}</h3>
-                        <button style={styles.editButton} onClick={handleEdit}>
+                        {/* <h3 style={styles.detailItem}><strong>Tham gia vào:</strong> {new Date(userData.date_joined).toLocaleDateString()}</h3> */}
+
+                       
+                       <button style={styles.editButton} onClick={handleEdit}>
                             Cập nhật trang cá nhân
                         </button>
                     </>
@@ -444,13 +447,18 @@ const styles = {
         padding: '5px 10px',
         cursor: 'pointer',
     },
-    pageContainer: {paddingLeft: '100px', display: 'flex', justifyContent: 'center', padding: '20px'},
+    pageContainer: {paddingLeft: '100px', display: 'flex', justifyContent: 'center', padding: '20px',
+    },
     mainContent: { display: 'flex', justifyContent: 'space-between', width: '100%', paddingRight: '20px'},
     postsContainer: { flex: 2, marginRight: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '10px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', marginTop: '30px' },
     sidebar: { flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' },
     mediaContainer: { backgroundColor: '#fff', padding: '15px', borderRadius: '10px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', marginTop: '30px' },
-    mediaGallery: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px' },
-    mediaImage: { width: '100%', height: '150px', objectFit: 'cover', borderRadius: '5px' },
+    mediaGallery: { 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(3, 1fr)', // Chia thành 3 cột
+        gap: '10px'  // Khoảng cách giữa các ảnh
+      },
+          mediaImage: { width: '100%', height: '150px', objectFit: 'cover', borderRadius: '5px' },
     followingContainer: { backgroundColor: '#fff', padding: '15px', borderRadius: '10px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', marginTop: '30px' },
     followingList: { listStyleType: 'none', paddingLeft: '0', fontSize: '16px' },
     postItem: { backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '5px', marginBottom: '20px', border: '1px solid #ddd' },
@@ -462,13 +470,13 @@ const styles = {
     postVideo: { width: '100%', marginTop: '10px' },
     postActions: { display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px', padding: '10px 0', borderTop: '1px solid #ddd' },
     actionIcon: { width: '20px', marginRight: '5px' },
-    profileContainer: { marginLeft: '420px', width: 'calc(90% - 240px)', marginTop: '50px', padding: '20px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', borderRadius: '10px' },
+    profileContainer: { marginLeft: '260px', marginTop: '50px', padding: '20px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', borderRadius: '10px' },
     profileHeader: {textAlign: 'center', position: 'relative', marginBottom: '50px' },
-    coverImage: { width: '100%', height: '250px', objectFit: 'cover', borderRadius: '10px 10px 0 0' },
+    coverImage: { width: '90%', height: '250px', objectFit: 'cover', borderRadius: '10px 10px 0 0' },
     avatarContainer: { position: 'absolute', top: '200px', left: '50%', transform: 'translateX(-50%)', width: '150px', height: '150px', borderRadius: '50%', overflow: 'hidden', border: '5px solid #fff', backgroundColor: '#eee' },
     avatarImage: { width: '100%', height: '100%', objectFit: 'cover' },
     userName: { marginTop: '100px', fontSize: '28px', color: '#333' },
-    email: { color: '#666', fontSize: '18px', marginTop: '10px' },
+    email: { color: '#666', fontSize: '18px', marginTop: '10px',   fontStyle: 'italic'     },
     profileDetails: { textAlign: 'left', marginTop: '20px', padding: '0 20px' },
     detailItem: { color: '#333', marginBottom: '10px' },
     inputGroup: { marginBottom: '20px' },
@@ -477,7 +485,7 @@ const styles = {
     textarea: { width: '100%', padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ddd', minHeight: '100px' },
     saveButton: { backgroundColor: '#4CAF50', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' },
     editButton: { backgroundColor: '#008CBA', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' },
-    userMenu: { display: 'flex', alignItems: 'center', position: 'absolute', top: '20px', right: '20px', backgroundColor: '#ddd', borderRadius: '15px', padding: '10px', cursor: 'pointer' },
+    userMenu: { display: 'flex', alignItems: 'center', position: 'absolute', top: '10px', right: '20px', backgroundColor: '#ddd', borderRadius: '15px', padding: '10px', cursor: 'pointer' },
     smallAvatar: { width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px' },
     userNameSmall: { fontSize: '16px' },
     logoutOption: { position: 'absolute', top: '60px', right: '10px', backgroundColor: '#f44336', color: '#fff', padding: '10px', borderRadius: '5px', cursor: 'pointer', zIndex: 1000 },

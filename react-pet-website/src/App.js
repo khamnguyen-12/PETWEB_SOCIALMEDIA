@@ -194,7 +194,7 @@ const sidebarStyles = {
   background: 'linear-gradient(66deg, #1ab7ea, #1769ff)',
   position: 'fixed',
   top: '15px',
-  left: '200px',
+  left: '50px',
   width: '200px',
   height: '75%',
   padding: '20px',
@@ -222,6 +222,8 @@ const buttonWrapperStyles = {
   textAlign: 'center',
   marginBottom: '20px',
 };
+
+
 
 export default App;
 

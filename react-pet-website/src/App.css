@@ -2,4 +2,56 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  font-family: 'Cabin', sans-serif;
+}
+
+/* Thiết lập nền cho toàn bộ trang */
+body {
+  background-image: url('./images/backGround1.jpg'); /* Đường dẫn tới ảnh */
+  background-size: cover; /* Kéo dài hình ảnh để lấp đầy toàn bộ không gian */
+  background-repeat: no-repeat; /* Không lặp lại hình ảnh */
+  background-position: center; /* Căn giữa hình ảnh */
+  background-attachment: fixed; /* Giữ hình nền cố định khi cuộn */
+}
+
+/* Thiết lập cho hình ảnh trong modal hoặc gallery */
+.mediaImage {
+  width: 100%;          /* Chiều rộng 100% để hình ảnh chiếm toàn bộ không gian */
+  height: auto;        /* Đảm bảo chiều cao tự động để giữ tỷ lệ */
+  object-fit: cover;   /* Cắt hình ảnh nếu cần thiết để giữ kích thước */
+  display: block;      /* Hiển thị dưới dạng block để loại bỏ khoảng cách */
+  margin: 0 auto;     /* Căn giữa hình ảnh trong khung chứa */
+}
+
+/* Định dạng cho modal (nếu cần) */
+.modalOverlay {
+  position: fixed;     /* Đặt modal ở vị trí cố định */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7); /* Màu nền mờ */
+  display: flex;      /* Sử dụng flexbox để căn giữa nội dung */
+  justify-content: center; 
+  align-items: center;
+}
+
+.modalContent {
+  background: white;  /* Nền trắng cho modal */
+  padding: 20px;      /* Khoảng cách trong modal */
+  border-radius: 8px; /* Bo góc cho modal */
+  position: relative;  /* Đặt lại vị trí */
+}
+
+/* Định dạng cho các nút */
+.closeButton {
+  background-color: #f44336; /* Màu đỏ cho nút đóng */
+  color: white;               /* Chữ màu trắng */
+  border: none;               /* Không có viền */
+  padding: 10px 15px;        /* Khoảng cách cho nút */
+  cursor: pointer;            /* Hiển thị con trỏ khi hover */
+}
+
+.closeButton:hover {
+  background-color: #d32f2f; /* Thay đổi màu khi hover */
 }
