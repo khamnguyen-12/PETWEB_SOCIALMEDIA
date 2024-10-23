@@ -16,8 +16,10 @@ import likeGif from '../../images/like.gif';
 import sadGif from '../../images/sad.gif';
 import laughGif from '../../images/laugh.gif';
 import reportPNG from '../../images/exclamation.png';
-import Modal from 'react-modal';
-import Report from '../MainContent/Report';
+
+import earthPost1 from '../../images/earthPost1.png';
+
+
 
 const MainContent = () => {
     const [posts, setPosts] = useState([]);
@@ -344,10 +346,10 @@ const MainContent = () => {
                         <div css={styles.modalBody}>
                             <div css={styles.userInfo}>
                                 <img src={user.avatar || defaultAvatar} alt="User Avatar" css={styles.modalAvatar} />
-                                <div>
-                                    <p css={styles.userName}>{user.first_name} {user.last_name}</p>
-                                    <p css={styles.userPrivacy}>Mọi người</p>
-                                </div>
+                                <p css={styles.userName}>{user.first_name} {user.last_name}</p>
+                            </div>
+                            <div>
+                                <p css={styles.userPrivacy}>Hãy chia sẻ khoảnh khắc đáng yêu của thú cưng hôm nay nào!!</p>
                             </div>
                             <textarea
                                 css={styles.textArea}
@@ -391,10 +393,9 @@ const MainContent = () => {
             {selectedPost ? (
                 <div css={styles.postCard}>
                     <div css={styles.postHeader}>
-                        <img src={user.avatar || defaultAvatar} alt="Avatar" css={styles.postAvatar} />
-                        <div css={styles.userInfo}>
+                        <div css={styles.userInfoPost}>
+                            <img src={user.avatar || defaultAvatar} alt="Avatar" css={styles.postAvatar} />
                             <p css={styles.postUserName}>{user.first_name} {user.last_name}</p>
-                            <p css={styles.postTime}>{formatTimeAgo(selectedPost.created_at)}</p>
                         </div>
                     </div>
                     <p>{selectedPost.content}</p>
@@ -476,7 +477,12 @@ const MainContent = () => {
                                     {/* Hiển thị tên người dùng */}
                                     <p css={styles.postUserName}>{post.user.first_name} {post.user.last_name}</p>
                                     {/* Hiển thị thời gian đăng bài */}
-                                    <p css={styles.postTime}>{formatTimeAgo(post.created_date)}</p>
+                                    <div css={styles.dateAndEarth}>
+                                        <p css={styles.postTime}>{formatTimeAgo(post.created_date)}</p>
+
+                                        <img src={earthPost1} css={styles.earthPost} />
+                                    </div>
+
                                 </div>
                             </div>
                             <p>{post.content}</p>
@@ -508,8 +514,11 @@ const MainContent = () => {
                                         </div>
                                     </div>
                                 )}
-                                <span>Có... bình luận</span>
                             </div>
+
+
+                            <hr css={styles.separator} />
+
                             <div css={styles.postActions}>
                                 <div css={styles.actionGroup} onClick={() => handleReactPost(post.id, 3)}>
                                     <img src={getReactionIcon(post.userReaction)} alt="Reaction" css={styles.actionIcon} />
@@ -579,6 +588,14 @@ const MainContent = () => {
 };
 
 const styles = {
+
+
+    separator: {
+        border: 'none',
+        borderTop: '2px solid #ccc',  // Đường kẻ màu xám
+        margin: '10px 0',  // Khoảng cách giữa các phần tử
+    },
+
     container: css`
         width: 100%;
         max-width: 600px;
@@ -589,14 +606,29 @@ const styles = {
         display: flex;
         justify-content: center;
         margin-bottom: 20px;
+        position: relative; /* Đặt container ở vị trí tương đối để sử dụng absolute bên trong */
     `,
+
     newSearchInput: css`
         width: 100%;
-        max-width: 500px;
+        max-width: 600px; /* Kích thước mặc định khi chưa focus */
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 20px;
         outline: none;
+        transition: width 0.5s ease, border-color 0.5s ease; /* Hiệu ứng mượt mà cho chiều rộng và màu viền */
+        position: relative;
+
+        &:focus {
+            width: 60vw; /* Thanh tìm kiếm sẽ chiếm 90% chiều rộng của viewport */
+            max-width: none; /* Không giới hạn chiều rộng */
+            z-index: 10; /* Đảm bảo hiển thị trên các phần tử khác */
+            border-color: rgba(173, 216, 230, 0.8); /* Màu viền khi focus */
+            border-radius: 25px; /* Tăng độ bo góc khi mở rộng */
+            /* Không cần hiệu ứng trôi */
+            border-width: 5px; /* Điều chỉnh độ dày viền khi focus */
+
+        }
     `,
     searchResults: css`
         background: #fff;
@@ -607,10 +639,10 @@ const styles = {
     heartAnimation: css`
         position: absolute;
         top: -50px;
-        left: 50%;
-        transform: translateX(-50%) scale(0);
+        left: 20%;
+        // transform: translateX(-50%) scale(0);
         background-color: white;
-        padding: 10px;
+        padding: 5px 10px;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         opacity: 0;
@@ -618,9 +650,26 @@ const styles = {
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 10%; /* Make the background circular */
-
+        border-radius: 43%; /* Make the background circular */
+        /* Hiệu ứng khi hover */
+        &:hover {
+            box-shadow: 0 0 15px rgba(173, 216, 230, 0.8); /* Hiệu ứng sáng màu đỏ */
+            border: 0.5px solid rgba(173, 216, 230, 0.8); /* Viền phát sáng màu đỏ */
+            animation: glow 1.5s infinite alternate; /* Hiệu ứng glow */
+        }
     `,
+
+    /* Keyframes cho hiệu ứng sáng */
+    '@keyframes glow': css`
+        0% {
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+        }
+        100% {
+            box-shadow: 0 0 20px rgba(255, 0, 0, 1);
+        }
+    `,
+
+
     reactionsContainer: css`
         display: flex;
         align-items: center;
@@ -657,6 +706,8 @@ const styles = {
             opacity: 1;
             animation: bounce 0.5s ease-in-out;
         }
+
+
     `,
     modalImage: css`
         max-width: 100%;
@@ -696,6 +747,13 @@ const styles = {
         border-radius: 50%;
         margin-right: 10px;
     `,
+
+    earthPost: css`
+    width: 16px; /* Điều chỉnh kích thước nhỏ giống ngày đăng */
+    height: 16px;
+    margin-left: 5px; /* Khoảng cách giữa biểu tượng và ngày đăng */
+    object-fit: contain; /* Giữ nguyên tỉ lệ ảnh */`
+    ,
     searchInput: css`
         flex-grow: 1;
         border: none;
@@ -732,6 +790,9 @@ const styles = {
         flex-direction: column;
         gap: 10px;
     `,
+    dateAndEarth: css`
+    display: flex;
+`,
     commentCount: `
             margin-left: auto`,
     modalOverlay: css`
@@ -759,9 +820,17 @@ const styles = {
         height: 40px;
         border-radius: 50%;
     `,
+    userInfoPost: css`
+        display: flex;
+        flex-direction: row; /* Thay đổi thành hiển thị dọc */
+        margin-left: 1px; /* Khoảng cách giữa ảnh đại diện và thông tin người dùng */
+        align-items: center; /* Căn giữa các thẻ theo chiều dọc */
+    
+
+`,
     userPrivacy: css`
         color: gray;
-        font-size: 14px;
+        font-size: 24px;
     `,
     modalHeader: css`
         display: flex;
@@ -826,13 +895,19 @@ const styles = {
     postCard: css`
         border: 1px solid #ccc;
         border-radius: 10px;
-        padding: 20px;
+        padding: 20px ;
+        
         margin-bottom: 20px;
         position: relative;
+        background-color: #FFFFFF;
+
+
     `,
     postHeader: css`
         display: flex;
         align-items: center;
+            margin-bottom: 10px;
+
     `,
     postAvatar: css`
         width: 40px;
@@ -842,16 +917,21 @@ const styles = {
     `,
     userInfo: css`
         display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
+        flex-direction: column; /* Thay đổi thành hiển thị dọc */
+    justify-content: center; /* Canh giữa theo chiều dọc để thẳng hàng với ảnh đại diện */
+    margin-left: 1px; /* Khoảng cách giữa ảnh đại diện và thông tin người dùng */
+
     `,
     postUserName: css`
         font-weight: bold;
+    margin-bottom: 1px; /* Giảm khoảng cách giữa tên và ngày tạo */
+
     `,
     postTime: css`
         color: gray;
         font-size: 14px;
+            margin: 0; /* Xóa khoảng cách bên ngoài để sát với tên người dùng */
+
     `,
     reactIcons: css`
         display: flex;
@@ -866,9 +946,10 @@ const styles = {
         padding: 10px; /* Add padding to create a background effect */
         border-radius: 50%; /* Make the background circular */
         background-color: transparent; /* Default background */
-        transition: background-color 0.3s ease; /* Smooth transition */
+        transition: transform 0.3s ease, background-color 0.3s ease; /* Smooth transition for both transform and background */
         &:hover {
-            background-color: rgba(0, 0, 0, 0.1); /* Darken background on hover */
+            // background-color: rgba(0, 0, 0, 0.1); /* Darken background on hover */
+            transform: scale(1.5); /* Scale up icon on hover */
         }
     `,
     postImage: css`
@@ -877,6 +958,9 @@ const styles = {
         object-fit: cover;
         margin-top: 10px;
         margin-bottom: 2px;
+        border-radius: 3px;
+        border: 0.7px solid #000; /* Black border */
+
     `,
     postVideo: css`
         width: 100%;

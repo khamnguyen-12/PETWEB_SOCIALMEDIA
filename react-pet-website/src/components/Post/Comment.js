@@ -18,6 +18,7 @@ const Comment = () => {
     const [comment, setComment] = useState('');
     const [postId, setPostId] = useState(id); // Gán ID từ params cho postId
     const [currentUser, setCurrentUser] = useState(null); // Thêm state để lưu thông tin người dùng hiện tại
+    const commentsCount = comments.length; // Tính số lượng bình luận
 
 
     const avatarCMtBar = currentUser?.avatar || defaultAvatar;
@@ -112,14 +113,14 @@ const Comment = () => {
             // Gọi API để ẩn comment
             const response = await authAPI().post(endpoints.delete_cmt(commentId));
             console.log('Comment has been hidden successfully:', response.data);
-    
+
             // Kiểm tra nếu API trả về thành công (status code 200)
             if (response.status === 200) {
                 // Cập nhật lại danh sách comments sau khi ẩn comment thành công
-                setComments(comments.map(comment => 
+                setComments(comments.map(comment =>
                     comment.id === commentId ? { ...comment, active: false } : comment
                 ));
-                
+
                 // Làm mới lại trang sau khi ẩn comment thành công
                 window.location.reload();
             } else {
@@ -129,7 +130,7 @@ const Comment = () => {
             console.error('Error hiding comment:', error.response?.data || error.message);
         }
     };
-    
+
 
 
     return (
@@ -154,6 +155,10 @@ const Comment = () => {
             </div>
 
             <div style={styles.commentsSection}>
+
+
+                {/* Hiển thị số lượng bình luận */}
+                <span style={{ fontWeight: 'bold' }}>Có {commentsCount} bình luận</span>
                 {comments.length > 0 ? (
                     comments.map((comment) => (
                         <div key={comment.id} style={styles.comment}>
@@ -176,7 +181,7 @@ const Comment = () => {
                                     <button style={styles.modalButton} onClick={() => handleDeleteComment(comment.id)}>Xóa comment</button>
                                 )}
                             </div>
-                            
+
                         </div>
                     ))
                 ) : (
@@ -202,6 +207,7 @@ const Comment = () => {
                 </button>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
             </div>
+
         </div>
     );
 
@@ -230,6 +236,15 @@ const styles = {
         backgroundColor: '#fff',
         borderRadius: '8px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    },
+
+
+    highlightText: {
+        fontSize: '24px', // Larger font size to highlight
+        fontWeight: 'bold', // Make text bold
+        textAlign: 'center', // Center the text
+        marginBottom: '20px', // Add some space below the text
+        color: '#333', // Optional: change color to make it more distinct
     },
 
     comment: {
