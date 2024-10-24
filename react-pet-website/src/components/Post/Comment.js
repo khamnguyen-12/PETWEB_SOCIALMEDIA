@@ -3,10 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import defaultAvatar from '../../images/avatarModel.jpg';
 import { authAPI, endpoints } from "../../configs/APIs";
-import heart from '../../images/heart.gif';
-import likeGif from '../../images/like.gif';
-import sadGif from '../../images/sad.gif';
-import laughGif from '../../images/laugh.gif';
+import ModalImage from "react-modal-image";
+
 
 const Comment = () => {
     const { id } = useParams();
@@ -19,6 +17,7 @@ const Comment = () => {
     const [postId, setPostId] = useState(id); // Gán ID từ params cho postId
     const [currentUser, setCurrentUser] = useState(null); // Thêm state để lưu thông tin người dùng hiện tại
     const commentsCount = comments.length; // Tính số lượng bình luận
+    const [isZoomed, setIsZoomed] = useState(false);
 
 
     const avatarCMtBar = currentUser?.avatar || defaultAvatar;
@@ -80,7 +79,9 @@ const Comment = () => {
         setComment(event.target.value);
     };
 
-
+    const handleImageClick = () => {
+        setIsZoomed(!isZoomed); // Đảo ngược trạng thái zoom
+    };
 
     const handleCommentSubmit = async () => {
         if (!comment.trim()) {
@@ -150,10 +151,28 @@ const Comment = () => {
                 </div>
                 <p style={styles.paragraph}>{post.content}</p>
                 {post.images && post.images.length > 0 && (
-                    <img src={post.images[0].image} alt="Post Image" style={styles.postImage} />
+                    <div style={styles.imageContainer}>
+                        {isZoomed && <div style={styles.overlay} onClick={handleImageClick} />} {/* Lớp mờ */}
+                        <img
+                            src={post.images[0].image}
+                            alt="Post Image"
+                            onClick={handleImageClick} // Thêm sự kiện khi nhấn vào ảnh
+                            style={{
+                                width: '90%',
+                                height: isZoomed ? 'auto' : '300px',   // Chiều cao tự động khi zoom
+                                maxHeight: isZoomed ? 'none' : '300px', // Xóa giới hạn chiều cao khi zoom
+                                objectFit: 'cover',                    // Giúp ảnh fit vào khung khi chưa zoom
+                                borderRadius: '10px',
+                                cursor: 'pointer',                     // Con trỏ hiển thị khi nhấn vào ảnh
+                                transition: 'transform 0.3s ease',     // Hiệu ứng phóng to
+                                transform: isZoomed ? 'scale(1.5)' : 'scale(1)',  // Phóng to ảnh
+                                zIndex: 2, // Đảm bảo ảnh ở trên lớp mờ
+                                position: 'relative' // Đặt ảnh ở chế độ tương đối
+                            }}
+                        />
+                    </div>
                 )}
             </div>
-
             <div style={styles.commentsSection}>
 
 
@@ -215,6 +234,37 @@ const Comment = () => {
 };
 
 const styles = {
+    imageContainer: {
+        position: 'relative', // Đặt vị trí tương đối cho chứa ảnh
+        display: 'flex', // Giúp căn giữa ảnh
+        justifyContent: 'center', // Căn giữa ảnh
+        alignItems: 'center', // Căn giữa ảnh theo chiều dọc
+        
+    },
+
+    overlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Màu sắc và độ mờ của lớp mờ
+        zIndex: 1, // Đặt lớp mờ bên dưới ảnh
+    },
+
+
+    paragraph: {
+        margin: '10px 0',
+        color: '#555',
+        textAlign: 'left', // Căn lề trái cho đoạn văn
+    },
+    postContent: {
+        width: '100%',
+        textAlign: 'center',
+
+    },
+
+
     postContainer: {
         display: 'flex',
         flexDirection: 'column',
@@ -228,6 +278,7 @@ const styles = {
         borderRadius: '10px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     },
+
 
     commentsSection: {
         width: '100%',
@@ -245,6 +296,10 @@ const styles = {
         textAlign: 'center', // Center the text
         marginBottom: '20px', // Add some space below the text
         color: '#333', // Optional: change color to make it more distinct
+        borderBottom: '2px solid #ccc', // Thêm nét đứt ở dưới
+        width: '100%',           // Kéo dài hết chiều rộng của thẻ cha
+        display: 'inline-block', // Giúp đường kẻ phủ hết chiều rộng của thẻ cha
+        paddingBottom: '10px',   // Khoảng cách giữa nội dung và đường kẻ
     },
 
     comment: {
@@ -262,10 +317,9 @@ const styles = {
     userHeader: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
         marginBottom: '10px',
-        marginLeft: '10px',
-        position: 'relative',
+        marginLeft: '0',
+        // position: 'relative',
     },
 
     userInfoContainer: {
@@ -280,14 +334,17 @@ const styles = {
 
     userInfo: {
         display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginLeft: '10px',
+        flexDirection: 'column', /* Thay đổi thành hiển thị dọc */
+        justifyContent: 'center', /* Canh giữa theo chiều dọc để thẳng hàng với ảnh đại diện */
+        marginLeft: '1px', /* Khoảng cách giữa ảnh đại diện và thông tin người dùng */
+        marginTop: '11px', /* Khoảng cách giữa ảnh đại diện và thông tin người dùng */
+
     },
 
     timeSince: {
         color: '#999',
         fontSize: '12px',
+        textAlign: 'left',
     },
 
     userAvatar: {

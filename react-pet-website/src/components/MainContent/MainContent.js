@@ -16,6 +16,7 @@ import likeGif from '../../images/like.gif';
 import sadGif from '../../images/sad.gif';
 import laughGif from '../../images/laugh.gif';
 import reportPNG from '../../images/exclamation.png';
+// import sentPost from '../../images/sent.png';
 
 import earthPost1 from '../../images/earthPost1.png';
 
@@ -373,7 +374,7 @@ const MainContent = () => {
                                 />
                             </div>
                             <button
-                                className="submitButton"
+                                css={styles.submitButton}
                                 onClick={handlePostSubmit}
                                 disabled={isSubmitting}
                             >
@@ -587,6 +588,8 @@ const MainContent = () => {
     );
 };
 
+
+
 const styles = {
 
 
@@ -695,11 +698,14 @@ const styles = {
         display: flex;
         align-items: center;
         cursor: pointer;
-        transition: background-color 0.3s ease;
-        padding: 5px 10px;
+        transition: background-color 0.3s ease, transform 0.3s ease; /* Thêm hiệu ứng transform */
+        // padding: 5px 10px;
         border-radius: 10px;
+        box-sizing: border-box; /* Thêm thuộc tính này */
+
         &:hover {
             background-color: #f0f0f0;
+            transform: scale(1.35); /* Phóng to nhẹ khi hover */
         }
         &:hover > div {
             transform: scale(1);
@@ -836,7 +842,9 @@ const styles = {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 16px;
+        margin-bottom: 8px;
+        border-bottom: 2px dashed #ccc; /* Thêm nét đứt ở dưới */
+
     `,
     textArea: css`
         width: 100%;
@@ -856,18 +864,17 @@ const styles = {
         border-radius: 10px;
     `,
     submitButton: css`
-        padding: 8px 16px;
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 6px;
+        background-color: white;
+        color: blue;
+        border: 2px solid #1769ff;
+        padding: 10px 20px;
+        font-size: 16px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
-        &:disabled {
-            background-color: #ccc;
-        }
-        &:hover:not(:disabled) {
-            background-color: #45a049;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        border-radius: 33px;
+        &:hover {
+            background-color: #1769ff;
+            color: white;
         }
     `,
     notification: css`
@@ -883,13 +890,16 @@ const styles = {
         z-index: 2000;
     `,
     closeButton: css`
-        font-size: 24px;
+        font-size: 55px;
         cursor: pointer;
-        border: none;
+        border-radius: 66px;
         background: transparent;
         color: #333;
+        transition: color 0.3s ease, transform 0.3s ease; /* Thêm hiệu ứng chuyển đổi mượt mà */
+        
         &:hover {
-            color: #999;
+            color: red; /* Chuyển thành màu đỏ khi hover */
+            transform: scale(1.1); /* Phóng to 10% khi hover */
         }
     `,
     postCard: css`
@@ -972,8 +982,7 @@ const styles = {
         display: flex;
         justify-content: space-around;
         align-items: center;
-        margin-top: 10px;
-        padding-top: 10px;
+
     `,
     actionIcon: css`
         width: 20px;
