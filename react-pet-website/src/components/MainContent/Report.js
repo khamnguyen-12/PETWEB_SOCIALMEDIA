@@ -47,7 +47,7 @@ const Report = (showModal) => {
                 setReportReason('');
 
                 // Điều hướng về trang trước và cuộn lại vị trí cũ
-                navigate(-1);  // Quay lại trang trước đó
+                navigate('/');  // Quay lại trang trước đó
                 setTimeout(() => {
                     window.scrollTo(0, scrollPosition.current);  // Cuộn về vị trí đã lưu
                     console.log('Chuyển về vị trí bài viết:', scrollPosition.current);

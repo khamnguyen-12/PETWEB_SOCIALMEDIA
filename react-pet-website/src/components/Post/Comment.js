@@ -158,14 +158,14 @@ const Comment = () => {
                             alt="Post Image"
                             onClick={handleImageClick} // Thêm sự kiện khi nhấn vào ảnh
                             style={{
-                                width: '90%',
-                                height: isZoomed ? 'auto' : '300px',   // Chiều cao tự động khi zoom
-                                maxHeight: isZoomed ? 'none' : '300px', // Xóa giới hạn chiều cao khi zoom
+                                width: '95%',
+                                height: isZoomed ? 'auto' : '400px',   // Chiều cao tự động khi zoom
+                                maxHeight: isZoomed ? 'none' : '500px', // Xóa giới hạn chiều cao khi zoom
                                 objectFit: 'cover',                    // Giúp ảnh fit vào khung khi chưa zoom
                                 borderRadius: '10px',
                                 cursor: 'pointer',                     // Con trỏ hiển thị khi nhấn vào ảnh
                                 transition: 'transform 0.3s ease',     // Hiệu ứng phóng to
-                                transform: isZoomed ? 'scale(1.5)' : 'scale(1)',  // Phóng to ảnh
+                                transform: isZoomed ? 'scale(1.1)' : 'scale(1)',  // Phóng to ảnh
                                 zIndex: 2, // Đảm bảo ảnh ở trên lớp mờ
                                 position: 'relative' // Đặt ảnh ở chế độ tương đối
                             }}
@@ -204,7 +204,7 @@ const Comment = () => {
                         </div>
                     ))
                 ) : (
-                    <p>No comments yet.</p>
+                    <p>Chưa có bình luận nào!!</p>
                 )}
             </div>
 
@@ -316,7 +316,7 @@ const styles = {
 
     userHeader: {
         display: 'flex',
-        alignItems: 'center',
+        // alignItems: 'center',
         marginBottom: '10px',
         marginLeft: '0',
         // position: 'relative',
@@ -326,7 +326,7 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#f0f0f0',
-        padding: '10px',
+        padding: '5px 0 0px 5px',
         borderRadius: '8px',
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
         width: '100%',
@@ -352,6 +352,7 @@ const styles = {
         height: '40px',
         borderRadius: '50%',
         marginRight: '10px',
+        marginTop: "10px",
     },
 
     userName: {
@@ -363,8 +364,8 @@ const styles = {
     },
 
     commentBox: {
-        marginTop: '5px',
-        padding: '8px',
+        // marginTop: '5px',
+        // padding: '8px',
         borderRadius: '8px',
         color: '#333',
     },
@@ -377,7 +378,7 @@ const styles = {
     },
 
     modalButton: {
-        backgroundColor: '#007bff',
+        backgroundColor: 'rgb(208,0,0)',
         color: '#fff',
         padding: '5px 10px',
         borderRadius: '5px',

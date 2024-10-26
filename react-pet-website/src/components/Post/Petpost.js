@@ -45,7 +45,7 @@ const Petpost = () => {
             console.error('Error fetching petposts by topic:', error);
         }
     };
-    
+
 
     const fetchCategories = async () => {
         try {
@@ -108,47 +108,29 @@ const Petpost = () => {
             marginBottom: '15px',
         },
         petpostList: {
-            listStyleType: 'none',
-            padding: 0,
+            // listStyleType: 'none',
+            // padding: 0,
         },
-        petpostItem: {
-            marginBottom: '20px',
-            border: '1px solid #ccc',
-            padding: '10px',
-        },
-        petpostImage: {
-            maxWidth: 'auto', // Thay đổi kích thước
-            height: 'auto',
-            display: 'block',
-            marginTop: '10px',
-            width: 'auto',                   // Makes the image take up the full width of the post
-            borderRadius: '5px',             // Rounds the corners of the image
-        },
+
+
         fullPost: {
             marginTop: '20px',
             padding: '15px',
             border: '1px solid #000',
         },
-        pageContainer: {
-            display: 'flex',
-            justifyContent: 'center',  // Centers content horizontally
-            alignItems: 'center',      // Centers content vertically
-            height: '100vh',           // Ensures the container takes up the full height of the viewport
-            backgroundColor: '#f0f0f0', // Optional: Adds a background color for visibility
-        },
+
         contentContainer: {
             display: 'flex',
             justifyContent: 'space-between', // Ensures that the main content and sidebar are spaced out
-            width: '80%',                   // Controls the width of the container (adjust as needed)
+            width: '90%',                   // Controls the width of the container (adjust as needed)
             backgroundColor: '#fff',         // Optional: Adds background for the content area
             padding: '20px',                 // Adds some padding for better aesthetics
             boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)', // Optional: Adds a subtle shadow effect
             borderRadius: '10px',            // Optional: Rounds the corners
+            overflow: 'auto', // Cho phép cuộn bên trong nếu cần
+
         },
-        mainContent: {
-            flex: 1,                         // Allows the main content to take up remaining space
-            paddingRight: '20px',            // Adds space between the main content and category container
-        },
+
         categoryContainer: {
             width: '300px',                  // Sets a fixed width for the category section
             backgroundColor: '#f9f9f9',      // Optional: Adds a different background for the category section
@@ -160,21 +142,25 @@ const Petpost = () => {
             textAlign: 'center',             // Centers the pet post title
             marginBottom: '20px',
         },
-        petpostList: {
-            listStyleType: 'none',           // Removes default list styling
-            padding: 0,
-        },
+
         petpostItem: {
-            marginBottom: '20px',            // Adds space between posts
-            padding: '10px',                 // Adds padding around each pet post
-            border: '1px solid #e0e0e0',     // Adds a border around each post
-            borderRadius: '8px',
+            marginBottom: '30px',              // Tăng khoảng cách giữa các bài đăng
+            // padding: '20px',                   // Tăng khoảng cách bên trong mỗi bài đăng
+            border: '2px solid #d0d0d0',       // Tăng độ dày của viền
+            borderRadius: '10px',              // Bo góc lớn hơn
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // Thêm đổ bóng để nổi bật
+            transition: 'transform 0.2s ease', // Hiệu ứng khi hover
+            overflow: 'hidden',              // Đảm bảo ảnh không tràn ra ngoài thẻ cha
+            width: '100%',                     // Cho phần tử rộng hơn 100% vùng chứa
         },
         petpostImage: {
-            width: '100%', // Đảm bảo chiếm toàn bộ chiều rộng Modal
-            height: 'auto', // Giữ nguyên tỷ lệ hình ảnh
-            maxHeight: '70vh', // Đảm bảo ảnh không quá cao khi Modal mở lớn
-            objectFit: 'contain', // Đảm bảo ảnh không bị cắt nếu kích thước khác nhau
+            width: '100%',                    // Đảm bảo hình ảnh chiếm toàn bộ chiều rộng của bài đăng
+            maxHeight: '600px',               // Đặt chiều cao tối đa cho ảnh
+            objectFit: 'cover',               // Cắt ảnh vừa khung mà không méo
+            borderRadius: '8px',              // Bo góc cho ảnh
+            transform: 'scale(1.1)',          // Phóng to ảnh thêm một chút
+            transition: 'transform 0.3s ease',// Hiệu ứng khi hover
+            marginBottom: `22px`
         },
 
         pageContainer: {
@@ -182,29 +168,24 @@ const Petpost = () => {
             flexDirection: 'column',
             alignItems: 'center',
             padding: '20px',
+            justifyContent: 'center',
+            overflow: 'auto', // Tạo cuộn khi nội dung lớn hơn vùng chứa
+            paddingLeft: '200px',
         },
         pageTitle: {
             fontSize: '2rem',
             marginBottom: '20px',
         },
-        contentContainer: {
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'space-between',
-        },
+
         mainContent: {
             flex: 1,
             padding: '20px',
             backgroundColor: '#f9f9f9',
-            paddingLeft: '410px',
+            paddingLeft: '10px',
+            marginRight: '110px', // Thêm khoảng cách bên phải
+
         },
-        categoryContainer: {
-            width: '300px',
-            padding: '20px',
-            backgroundColor: '#e0e0e0',
-            borderRadius: '10px',
-            flex: '1',
-        },
+
         categoryTitle: {
             fontSize: '1.5rem',
             marginBottom: '10px',
@@ -224,6 +205,7 @@ const Petpost = () => {
         },
         topicItem: {
             padding: '5px 0',
+            cursor: 'pointer',
         },
         fullPostModal: {
             display: modalOpen ? 'block' : 'none',
@@ -257,17 +239,15 @@ const Petpost = () => {
             fontSize: '1.5em',
             cursor: 'pointer',
         },
+        footerPetPost:{
+            cursor : 'pointer',
+            paddingLeft: '11px',
+        },
     };
 
     return (
         <div style={styles.pageContainer}>
-            {/* Tiêu đề trang */}
-            <h1 style={styles.pageTitle}>Kiến thức chăm sóc thú cưng</h1>
-
-            {/* Vùng chính */}
             <div style={styles.contentContainer}>
-
-                
                 {/* Nội dung chính bên trái */}
                 <div style={styles.mainContent}>
                     {/* Hiển thị danh sách petpost */}
@@ -276,13 +256,7 @@ const Petpost = () => {
                         {petposts.length > 0 ? (
                             petposts.map((post) => (
                                 <li key={post.id} style={styles.petpostItem}>
-                                    <h3 onClick={() => handlePostClick(post)} style={{ cursor: 'pointer' }}>
-                                        {post.title}
-                                    </h3>
-                                    {/* Hiển thị nội dung đã được giới hạn 40 từ */}
-                                    <p>
-                                        {post.content.split(' ').slice(0, 40).join(' ')}...
-                                    </p>
+
                                     {post.image && (
                                         <img
                                             src={`http://127.0.0.1:8000/media/${post.image}`} // Local image path
@@ -294,6 +268,17 @@ const Petpost = () => {
                                             }}
                                         />
                                     )}
+
+                                    <div style={styles.footerPetPost} onClick={() => handlePostClick(post)}>
+                                        <h3 >
+                                            {post.title}
+                                        </h3>
+                                        {/* Hiển thị nội dung đã được giới hạn 40 từ */}
+                                        <p>
+                                            {post.content.split(' ').slice(0, 40).join(' ')}...
+                                        </p>
+
+                                    </div>
                                 </li>
                             ))
                         ) : (
@@ -302,37 +287,6 @@ const Petpost = () => {
                     </ul>
 
                 </div>
-
-
-
-
-                {/* Modal cho nội dung đầy đủ của bài viết */}
-                {modalOpen && (
-                    <>
-                        <div style={styles.overlay} onClick={closeModal}></div>
-                        <div style={styles.fullPostModal}>
-                            <button style={styles.closeButton} onClick={closeModal}>
-                                &times;
-                            </button>
-                            {selectedPost && (
-                                <>
-                                    <h3>{selectedPost.title}</h3>
-                                    <p>{selectedPost.content}</p>
-                                    <img
-                                        src={`http://127.0.0.1:8000/media/${selectedPost.image}`}
-                                        alt={selectedPost.title}
-                                        style={{ width: '100%', height: 'auto', maxHeight: '70vh', objectFit: 'contain', scale: '70%', paddingBottom: '155px', bottom: '500px' }}
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src =
-                                                'https://wallpaperaccess.com/full/546539.jpg';
-                                        }}
-                                    />
-                                </>
-                            )}
-                        </div>
-                    </>
-                )}
 
                 {/* Vùng container bên phải để hiển thị danh sách Category */}
                 <div style={styles.categoryContainer}>
@@ -350,7 +304,6 @@ const Petpost = () => {
                                                     key={topic.id}
                                                     style={styles.topicItem}
                                                     onClick={() => handleTopicClick(topic.id)} // Thêm sự kiện onClick
-                                                    style={{ cursor: 'pointer' }} // Đổi con trỏ chuột khi hover
                                                 >
                                                     {topic.name}
                                                 </li>
@@ -367,6 +320,33 @@ const Petpost = () => {
                     </ul>
                 </div>
             </div>
+            {/* Modal cho nội dung đầy đủ của bài viết */}
+            {modalOpen && (
+                <>
+                    <div style={styles.overlay} onClick={closeModal}></div>
+                    <div style={styles.fullPostModal}>
+                        <button style={styles.closeButton} onClick={closeModal}>
+                            &times;
+                        </button>
+                        {selectedPost && (
+                            <>
+                                <h3>{selectedPost.title}</h3>
+                                <p>{selectedPost.content}</p>
+                                <img
+                                    src={`http://127.0.0.1:8000/media/${selectedPost.image}`}
+                                    alt={selectedPost.title}
+                                    style={{ width: '100%', height: 'auto', maxHeight: '70vh', objectFit: 'contain', scale: '70%', paddingBottom: '155px', bottom: '500px' }}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src =
+                                            'https://wallpaperaccess.com/full/546539.jpg';
+                                    }}
+                                />
+                            </>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

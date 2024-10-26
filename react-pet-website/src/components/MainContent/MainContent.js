@@ -10,7 +10,6 @@ import food from '../../images/food.png';
 import defaultAvatar from '../../images/avatarModel.jpg';
 import likeIcon from '../../images/love.png';
 import commentIcon from '../../images/comment.png';
-import shareIcon from '../../images/send.png';
 import heart from '../../images/heart.gif';
 import likeGif from '../../images/like.gif';
 import sadGif from '../../images/sad.gif';
@@ -259,28 +258,7 @@ const MainContent = () => {
                 return 'Yêu thích'; // Văn bản mặc định
         }
     };
-    // Hàm xử lý khi nhấn gửi báo cáo
-    // const handleSubmitReport = async (postId) => {
-    //     if (!reportReason.trim()) {
-    //         alert('Vui lòng nhập lý do báo cáo');
-    //         return;
-    //     }
 
-    //     try {
-    //         // Gửi yêu cầu POST lên API
-    //         const response = await authAPI().post(endpoints['user_report'](postId), {
-    //             reason: reportReason,
-    //         });
-
-    //         if (response.status === 200) {
-    //             alert('Báo cáo đã được gửi thành công');
-    //             closeModal(); // Đóng modal sau khi gửi thành công
-    //         }
-    //     } catch (error) {
-    //         console.error('Lỗi khi gửi báo cáo:', error);
-    //         alert('Có lỗi xảy ra khi gửi báo cáo. Vui lòng thử lại.');
-    //     }
-    // };
 
 
 

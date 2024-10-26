@@ -7,7 +7,13 @@ import defaultCover from '../../images/cover.jpeg';
 import defaultAvatar from '../../images/avatarModel.jpg';
 import likeIcon from '../../images/love.png';  // Biểu tượng Yêu thích
 import commentIcon from '../../images/comment.png';  // Biểu tượng Bình luận
-import shareIcon from '../../images/send.png';  // Biểu tượng Chia sẻ
+import reportPNG from '../../images/exclamation.png';
+import { jsx, css } from '@emotion/react';
+import earthPost1 from '../../images/earthPost1.png';
+import heart from '../../images/heart.gif';
+import likeGif from '../../images/like.gif';
+import sadGif from '../../images/sad.gif';
+import laughGif from '../../images/laugh.gif';
 
 const Profile = () => {
     const [userData, setUserData] = useState(null);
@@ -23,6 +29,8 @@ const Profile = () => {
     const [newAvatar, setNewAvatar] = useState(null);
     const [newCoverImage, setNewCoverImage] = useState(null);
     const [loading, setLoading] = useState(false); // Trạng thái loading
+    const [posts, setPosts] = useState([]);
+    const [selectedPost, setSelectedPost] = useState(null);
 
     useEffect(() => {
         if (!user) {
@@ -182,6 +190,69 @@ const Profile = () => {
         return `${Math.floor(diff / 86400)} ngày trước`;
     };
 
+    const handleCommentClick = (postId) => {
+        setSelectedPost(postId);
+        navigate(`/post/${postId}/comments`); // Chuyển hướng đến trang comment
+    };
+
+    const handleReactPost = async (postId, type) => {
+        try {
+            const response = await authAPI().post(endpoints.react_post(postId), { type });
+            console.log(response.data);
+            console.log(response.status);
+            console.log(response.data);
+
+            const updatedPosts = posts.map(post => {
+                if (post.id === postId) {
+                    let newReactions = { ...post.reactions }; // Copy object reactions
+                    const previousReaction = post.userReaction;
+
+                    // Nếu người dùng đã thả `react` trước đó
+                    if (previousReaction) {
+                        newReactions[previousReaction] -= 1; // Giảm số lượng của `react` cũ
+                    }
+
+                    // Nếu người dùng không bỏ `react` mà chuyển sang thả `react` mới
+                    if (previousReaction !== type) {
+                        newReactions[type] = (newReactions[type] || 0) + 1; // Tăng số lượng của `react` mới
+                    }
+
+                    return {
+                        ...post,
+                        userReaction: previousReaction === type ? null : type, // Cập nhật kiểu `react` người dùng
+                        reactions: newReactions // Cập nhật số lượng `react`
+                    };
+                }
+                return post;
+            });
+
+            setPosts(updatedPosts);
+        } catch (error) {
+            console.error('Failed to react to post:', error);
+        }
+    };
+
+
+    const openModal = (postId) => {
+        console.log('PostID bài post được chọn :', postId)
+        // Chuyển hướng đến trang báo cáo với ID của bài viết
+        navigate(`/report/${postId}`);
+    };
+
+    const getReactionIcon = (type) => {
+        switch (type) {
+            case 1:
+                return likeGif; // Hoặc biểu tượng tương ứng với type 1
+            case 2:
+                return laughGif; // Hoặc biểu tượng tương ứng với type 2
+            case 3:
+                return heart; // Hoặc biểu tượng tương ứng với type 3
+            case 4:
+                return sadGif; // Hoặc biểu tượng tương ứng với type 4
+            default:
+                return likeIcon; // Biểu tượng mặc định
+        }
+    };
     return (
         <div style={styles.profileContainer}>
             {/* Modal hiển thị hình ảnh được phóng to */}
@@ -311,8 +382,8 @@ const Profile = () => {
                         <h3 style={styles.detailItem}><strong>Giới tính:</strong> {getGenderName(userData.gender)}</h3>
                         {/* <h3 style={styles.detailItem}><strong>Tham gia vào:</strong> {new Date(userData.date_joined).toLocaleDateString()}</h3> */}
 
-                       
-                       <button style={styles.editButton} onClick={handleEdit}>
+
+                        <button style={styles.editButton} onClick={handleEdit}>
                             Cập nhật trang cá nhân
                         </button>
                     </>
@@ -324,7 +395,7 @@ const Profile = () => {
                         <h3 style={styles.sectionTitle}>Bài viết của bạn</h3>
                         {userPosts.length > 0 ? (
                             userPosts.map((post) => (
-                                <div key={post.id} style={styles.postItem}>
+                                <div key={post.id} style={styles.postCard}>
                                     <div style={styles.postHeader}>
                                         <img
                                             src={userData.avatar || defaultAvatar}
@@ -333,7 +404,11 @@ const Profile = () => {
                                         />
                                         <div>
                                             <p style={styles.postUserName}>{userData.first_name} {userData.last_name}</p>
-                                            <p style={styles.postTime}>{formatTimeAgo(post.created_at)}</p>
+                                            <div css={styles.dateAndEarth}>
+                                                <p css={styles.postTime}>{formatTimeAgo(post.created_date)}</p>
+
+                                                {/* <img src={earthPost1} css={styles.earthPost} /> */}
+                                            </div>
                                         </div>
                                     </div>
                                     <p>{post.content}</p>
@@ -346,10 +421,25 @@ const Profile = () => {
                                             Trình duyệt của bạn không hỗ trợ video.
                                         </video>
                                     ))}
+
+                                    <div style={styles.separator} /> {/* Đường kẻ ngăn cách */}
+
                                     <div style={styles.postActions}>
-                                        <img src={likeIcon} alt="Like" style={styles.actionIcon} /> Yêu thích
-                                        <img src={commentIcon} alt="Comment" style={styles.actionIcon} /> Bình luận
-                                        <img src={shareIcon} alt="Share" style={styles.actionIcon} /> Chia sẻ
+                                        <div style={styles.actionGroup} onClick={() => handleReactPost(post.id, 3)}>
+                                            <img src={likeIcon} alt="Reaction" style={styles.actionIcon} />
+                                            {/* <span>{getReactionText(post.userReaction)}</span> */}
+                                            <span>Yêu thích</span>
+                                        </div>
+
+                                        <div style={styles.actionGroup} onClick={() => handleCommentClick(post.id)}>
+                                            <img src={commentIcon} alt="Comment" style={styles.actionIcon} />
+                                            <span>Bình luận</span>
+                                        </div>
+                                        {/* Nút Báo cáo */}
+                                        <div style={styles.actionGroup} onClick={() => openModal(post.id)}>
+                                            <img src={reportPNG} alt="Report" style={styles.actionIcon} />
+                                            <span>Báo cáo</span>
+                                        </div>
                                     </div>
                                 </div>
                             ))
@@ -373,16 +463,6 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Cột bên phải: Kênh theo dõi */}
-                        <div style={styles.followingContainer}>
-                            <h3 style={styles.sectionTitle}>Kênh theo dõi</h3>
-                            {/* Danh sách kênh */}
-                            <ul style={styles.followingList}>
-                                <li>Kênh 1</li>
-                                <li>Kênh 2</li>
-                                <li>Kênh 3</li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -403,7 +483,72 @@ const getGenderName = (gender) => {
     }
 };
 
+const getReactionText = (type) => {
+    switch (type) {
+        case 1:
+            return 'Thích'; // Hoặc văn bản tương ứng với type 1
+        case 2:
+            return 'Haha'; // Hoặc văn bản tương ứng với type 2
+        case 3:
+            return 'Yêu thích'; // Hoặc văn bản tương ứng với type 3
+        case 4:
+            return 'Buồn'; // Hoặc văn bản tương ứng với type 4
+        default:
+            return 'Yêu thích'; // Văn bản mặc định
+    }
+};
+
 const styles = {
+
+
+    separator: {
+        width: '100%', // Độ rộng của đường kẻ
+        height: '1px', // Độ dày của đường kẻ
+        backgroundColor: '#ccc', // Màu sắc của đường kẻ
+        margin: '30px 0', // Khoảng cách phía trên và dưới đường kẻ
+    },
+    reactIcon: {
+        width: '16px', // Kích thước nhỏ hơn
+        height: '16px', // Kích thước nhỏ hơn
+        marginRight: '5px', // Khoảng cách giữa biểu tượng và văn bản
+    }
+    ,
+    reactIcons: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center', // Canh giữa các icon
+        gap: '10px' // Khoảng cách giữa các icon
+    }
+    ,
+    heartAnimation: {
+        position: 'absolute',
+        top: '-50px',
+        left: '20%',
+        backgroundColor: 'white',
+        padding: '5px 10px',
+        borderRadius: '43%', // Làm cho nền tròn
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+        opacity: 0,
+        transition: 'transform 0.3s ease, opacity 0.3s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        // Hiển thị khi hover lên icon
+        ':hover': {
+            opacity: 1, // Hiện ra khi hover
+            pointerEvents: 'auto' // Cho phép tương tác với các icon
+        }
+    },
+
+
+    actionGroup: {
+        // position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between', // Căn giữa các nút theo chiều ngang
+    },
+
+
     modalOverlay: {
         position: 'fixed',
         top: 0,
@@ -447,36 +592,119 @@ const styles = {
         padding: '5px 10px',
         cursor: 'pointer',
     },
-    pageContainer: {paddingLeft: '100px', display: 'flex', justifyContent: 'center', padding: '20px',
+    pageContainer: {
+        width: '100%',
+        overflow: 'hidden', // Đảm bảo không có nội dung nào tràn ra ngoài
     },
-    mainContent: { display: 'flex', justifyContent: 'space-between', width: '100%', paddingRight: '20px'},
-    postsContainer: { flex: 2, marginRight: '20px', backgroundColor: '#fff', padding: '15px', borderRadius: '10px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', marginTop: '30px' },
-    sidebar: { flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' },
-    mediaContainer: { backgroundColor: '#fff', padding: '15px', borderRadius: '10px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', marginTop: '30px' },
-    mediaGallery: { 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(3, 1fr)', // Chia thành 3 cột
-        gap: '10px'  // Khoảng cách giữa các ảnh
-      },
-          mediaImage: { width: '100%', height: '150px', objectFit: 'cover', borderRadius: '5px' },
+
+    mainContent: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '20px',
+    },
+
+    postsContainer: {
+        width: '65%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+    },
+
+
+
+
+
+    mediaGallery: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+        gap: '10px',
+    },
+
+    mediaImage: {
+        width: '100%',
+        height: '100px',
+        objectFit: 'cover',
+        borderRadius: '10px',
+    },
     followingContainer: { backgroundColor: '#fff', padding: '15px', borderRadius: '10px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', marginTop: '30px' },
     followingList: { listStyleType: 'none', paddingLeft: '0', fontSize: '16px' },
-    postItem: { backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '5px', marginBottom: '20px', border: '1px solid #ddd' },
-    postHeader: { display: 'flex', alignItems: 'center', marginBottom: '10px' },
-    postAvatar: { width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px' },
-    postUserName: { fontSize: '16px', fontWeight: 'bold', margin: 0 },
-    postTime: { fontSize: '14px', color: '#888', margin: 0 },
-    postImage: { width: '100%', maxHeight: '300px', objectFit: 'cover', marginTop: '10px' },
-    postVideo: { width: '100%', marginTop: '10px' },
-    postActions: { display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px', padding: '10px 0', borderTop: '1px solid #ddd' },
-    actionIcon: { width: '20px', marginRight: '5px' },
+    postCard: {
+        backgroundColor: '#fff',
+        padding: '20px',
+        borderRadius: '10px',
+        marginBottom: '20px',
+        border: '1px solid #ddd',
+        overflow: 'hidden', // Ẩn nội dung vượt quá
+    },
+
+    postHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '10px'
+    },
+
+    postAvatar: {
+        width: '40px',
+        height: '40px',
+        borderRadius: '50%',
+        marginRight: '10px'
+    },
+
+    postUserName: {
+        fontWeight: 'bold',
+        marginBottom: '1px' // Giảm khoảng cách giữa tên và ngày tạo
+    }
+    ,
+    postTime: {
+        color: 'gray',
+        fontSize: '14px',
+        margin: '0', // Xóa khoảng cách bên ngoài để sát với tên người dùng
+        display: 'flex', // Đảm bảo text căn giữa theo chiều dọc nếu cần
+        alignItems: 'center'
+    },
+
+    earthPost: {
+        width: '12px', // Thu nhỏ hơn để vừa với ngày đăng
+        height: '12px',
+        marginLeft: '5px', // Khoảng cách giữa biểu tượng và ngày đăng
+        objectFit: 'contain' // Giữ nguyên tỉ lệ ảnh
+    },
+
+    dateAndEarth: {
+        display: 'flex',
+        alignItems: 'center' // Căn giữa theo chiều dọc
+    }
+    ,
+    postImage: {
+        maxWidth: '100%',
+        height: 'auto', // Tự động điều chỉnh chiều cao dựa trên chiều rộng
+        borderRadius: '10px',
+        marginTop: '10px',
+        objectFit: 'cover', // Đảm bảo ảnh không bị méo
+    },
+
+    postVideo: {
+        maxWidth: '100%',
+        height: 'auto',
+        borderRadius: '10px',
+        marginTop: '10px',
+    },
+    postActions: {
+        display: 'flex',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    },
+    actionIcon: {
+        width: '20px', // Kích thước nhỏ hơn
+        height: '20px', // Kích thước nhỏ hơn
+        marginRight: '5px', // Khoảng cách giữa biểu tượng và văn bản
+    },
     profileContainer: { marginLeft: '260px', marginTop: '50px', padding: '20px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', borderRadius: '10px' },
-    profileHeader: {textAlign: 'center', position: 'relative', marginBottom: '50px' },
+    profileHeader: { textAlign: 'center', position: 'relative', marginBottom: '50px' },
     coverImage: { width: '90%', height: '250px', objectFit: 'cover', borderRadius: '10px 10px 0 0' },
     avatarContainer: { position: 'absolute', top: '200px', left: '50%', transform: 'translateX(-50%)', width: '150px', height: '150px', borderRadius: '50%', overflow: 'hidden', border: '5px solid #fff', backgroundColor: '#eee' },
     avatarImage: { width: '100%', height: '100%', objectFit: 'cover' },
     userName: { marginTop: '100px', fontSize: '28px', color: '#333' },
-    email: { color: '#666', fontSize: '18px', marginTop: '10px',   fontStyle: 'italic'     },
+    email: { color: '#666', fontSize: '18px', marginTop: '10px', fontStyle: 'italic' },
     profileDetails: { textAlign: 'left', marginTop: '20px', padding: '0 20px' },
     detailItem: { color: '#333', marginBottom: '10px' },
     inputGroup: { marginBottom: '20px' },
