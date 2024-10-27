@@ -27,7 +27,8 @@ const Petpost = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                await Promise.all([fetchCategories(), fetchTopic(), fetchPetpost(), fetchPetpostByTopic()]); // Gọi cả hai hàm đồng thời
+                const someTopicId = topic?.id; // Lấy topicId nếu topic đã có id
+                await Promise.all([fetchCategories(), fetchTopic(), fetchPetpost(), someTopicId && fetchPetpostByTopic(someTopicId)]); // Gọi cả hai hàm đồng thời
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -38,6 +39,12 @@ const Petpost = () => {
 
     const fetchPetpostByTopic = async (topicId) => {
         try {
+
+            if (!topicId) {
+                console.error('topicId is undefined. Cannot fetch petposts by topic.');
+                return;
+            }
+
             const res = await authAPI().get(endpoints['topic/petpost'](topicId));
             console.log('List petposts by topic:', res.data);
             setPetpost(res.data);
@@ -143,6 +150,10 @@ const Petpost = () => {
             marginBottom: '20px',
         },
 
+        textPetpost: {
+            padding: '21px',
+        },
+
         petpostItem: {
             marginBottom: '30px',              // Tăng khoảng cách giữa các bài đăng
             // padding: '20px',                   // Tăng khoảng cách bên trong mỗi bài đăng
@@ -152,6 +163,7 @@ const Petpost = () => {
             transition: 'transform 0.2s ease', // Hiệu ứng khi hover
             overflow: 'hidden',              // Đảm bảo ảnh không tràn ra ngoài thẻ cha
             width: '100%',                     // Cho phần tử rộng hơn 100% vùng chứa
+            cursor: 'pointer',
         },
         petpostImage: {
             width: '100%',                    // Đảm bảo hình ảnh chiếm toàn bộ chiều rộng của bài đăng
@@ -186,6 +198,11 @@ const Petpost = () => {
 
         },
 
+        headerPetpost: {
+            color: 'green',
+            margin: '11px',
+            fontWeight: 'bold',
+        },
         categoryTitle: {
             fontSize: '1.5rem',
             marginBottom: '10px',
@@ -219,6 +236,7 @@ const Petpost = () => {
             padding: '20px',
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
             zIndex: 1000,
+            display: 'flex',
         },
         overlay: {
             display: modalOpen ? 'block' : 'none',
@@ -239,10 +257,16 @@ const Petpost = () => {
             fontSize: '1.5em',
             cursor: 'pointer',
         },
-        footerPetPost:{
-            cursor : 'pointer',
+        footerPetPost: {
+            cursor: 'pointer',
             paddingLeft: '11px',
         },
+        createdDate: {
+            textAlign: 'right',
+            paddingRight: '11px',
+            fontStyle: 'italic',
+            color: 'gray',
+        }
     };
 
     return (
@@ -251,11 +275,13 @@ const Petpost = () => {
                 {/* Nội dung chính bên trái */}
                 <div style={styles.mainContent}>
                     {/* Hiển thị danh sách petpost */}
+
                     <h2 style={styles.petpostTitle}>Bài viết mới</h2>
                     <ul style={styles.petpostList}>
                         {petposts.length > 0 ? (
                             petposts.map((post) => (
-                                <li key={post.id} style={styles.petpostItem}>
+                                <li key={post.id} style={styles.petpostItem} onClick={() => handlePostClick(post)}>
+
 
                                     {post.image && (
                                         <img
@@ -268,14 +294,20 @@ const Petpost = () => {
                                             }}
                                         />
                                     )}
+                                    <div style={styles.headerPetpost}>
+                                        {post.topic.name}
+                                    </div>
 
-                                    <div style={styles.footerPetPost} onClick={() => handlePostClick(post)}>
+                                    <div style={styles.footerPetPost} >
                                         <h3 >
                                             {post.title}
                                         </h3>
                                         {/* Hiển thị nội dung đã được giới hạn 40 từ */}
                                         <p>
-                                            {post.content.split(' ').slice(0, 40).join(' ')}...
+                                            {post.content.split(' ').slice(0, 20).join(' ')}...
+                                        </p>
+                                        <p style={styles.createdDate}>
+                                            Ngày tạo: {new Date(post.created_date).toLocaleDateString('vi-VN')}
                                         </p>
 
                                     </div>
@@ -324,24 +356,47 @@ const Petpost = () => {
             {modalOpen && (
                 <>
                     <div style={styles.overlay} onClick={closeModal}></div>
-                    <div style={styles.fullPostModal}>
-                        <button style={styles.closeButton} onClick={closeModal}>
+                    <div style={{ ...styles.fullPostModal, borderRadius: '15px', overflow: 'hidden' }}> {/* Bo góc modal */}
+                        {/* <button style={styles.closeButton} onClick={closeModal}>
                             &times;
-                        </button>
+                        </button> */}
                         {selectedPost && (
                             <>
-                                <h3>{selectedPost.title}</h3>
-                                <p>{selectedPost.content}</p>
+                                <div style={styles.textPetpost}>
+
+                                    <h3>{selectedPost.title}</h3>
+                                    <p>{selectedPost.content}</p>
+
+
+                                    <div style={{ margin: '20px', paddingTop:'44px', textAlign:'right' }}>
+                                        <h5 >{selectedPost.author?.username || "Tác giả không xác định"}</h5> {/* Thay thế bằng thuộc tính đúng nếu cần */}
+                                        <p style={{fontStyle:'italic', color : 'gray'}}>
+                                            Ngày tạo: {new Date(selectedPost.created_date).toLocaleDateString('vi-VN')}
+                                        </p>
+                                    </div>
+                                </div>
+
+
                                 <img
                                     src={`http://127.0.0.1:8000/media/${selectedPost.image}`}
                                     alt={selectedPost.title}
-                                    style={{ width: '100%', height: 'auto', maxHeight: '70vh', objectFit: 'contain', scale: '70%', paddingBottom: '155px', bottom: '500px' }}
+                                    style={{
+                                        width: '50%',
+                                        height: 'auto',
+                                        maxHeight: '70vh',
+                                        objectFit: 'contain',
+                                        marginTop: '-20px', // Nhích lên trên khoảng trống (thay đổi giá trị nếu cần)
+
+
+                                    }}
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src =
-                                            'https://wallpaperaccess.com/full/546539.jpg';
+                                        e.target.src = 'https://wallpaperaccess.com/full/546539.jpg';
                                     }}
                                 />
+
+
+
                             </>
                         )}
                     </div>
