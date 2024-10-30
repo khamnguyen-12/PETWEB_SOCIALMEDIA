@@ -29,9 +29,8 @@ import ProfileLink from './components/ModeratorLink/ProfileLink'
 import adminPNG from './images/setting.png'
 import Admin from './components/Admin/Admin';
 import AddModerator from './components/Admin/AddModerator';
-import LoginBtn from './components/oauth2/login';
-import LogoutBtn from './components/oauth2/logout';
-import { gapi } from 'gapi-script';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 
 const clientID = "29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com";
 
@@ -48,28 +47,6 @@ const App = () => {
   }, [user]);
 
 
-  //   useEffect(() => {
-  //     function start() {
-  //       gapi.client.init({
-  //         clientID: clientID,
-  //         scope: ""
-  //       })
-  //     }
-  //     gapi.load('client:auth2', start);
-  //   });
-
-  // return (
-  //   <div className='App'>
-  //     <LoginBtn />
-
-  //     <LogoutBtn />
-
-  //   </div>
-  // )
-  // }
-  // export default App;
-
-
   //Phần chính 
   const ProtectedRoute = ({ user, roleRequired, children }) => {
     if (!user || user.role !== roleRequired) {
@@ -83,46 +60,53 @@ const App = () => {
 
   return (
     <SnackbarProvider maxSnack={3}>
-      <BrowserRouter>
-        <MyUserContext.Provider value={user}>
-          <MyDispatchContext.Provider value={dispatch}>
-            <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
 
-            <Routes>
-              <Route
-                exact
-                path='/'
-                element={user ? <MainContent /> : <Navigate to="/login" replace />}
-              />
-
-              <Route path='/login' element={<Login setShowSidebar={setShowSidebar} />} />
+      <GoogleOAuthProvider clientId="29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com">
 
 
-              <Route path='/signup' element={<Signup />} />
-              <Route path='/profile' element={<Profile />} />
-              <Route path="/post/:id" element={<DetailPost />} />
-              <Route path="/post/:id/comments" element={<Comment />} />
-              <Route path="/petpost/" element={<Petpost />} />
-              <Route path="/report/:postId" element={<Report />} />
-              <Route path="/post-link/:postId" element={<PostLink />} />
-              <Route path="/profile-link/:userId" element={<ProfileLink />} />
-              <Route path="/add-moderator/" element={<AddModerator />} />
+        <BrowserRouter>
+          <MyUserContext.Provider value={user}>
+            <MyDispatchContext.Provider value={dispatch}>
+              <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
 
-              <Route path='/admin' element={
-                <ProtectedRoute user={user} roleRequired={3}>
-                  <Admin />
-                </ProtectedRoute>
-              } />
-              <Route path='/moderator' element={
-                <ProtectedRoute user={user} roleRequired={2}>
-                  <Moderator />
-                </ProtectedRoute>
-              } />
-            </Routes>
-            {!user && <Footer />}
-          </MyDispatchContext.Provider>
-        </MyUserContext.Provider>
-      </BrowserRouter>
+              <Routes>
+                <Route
+                  exact
+                  path='/'
+                  element={user ? <MainContent /> : <Navigate to="/login" replace />}
+                />
+
+                <Route path='/login' element={<Login setShowSidebar={setShowSidebar} />} />
+
+
+                <Route path='/signup' element={<Signup />} />
+                <Route path='/profile' element={<Profile />} />
+                <Route path="/post/:id" element={<DetailPost />} />
+                <Route path="/post/:id/comments" element={<Comment />} />
+                <Route path="/petpost/" element={<Petpost />} />
+                <Route path="/report/:postId" element={<Report />} />
+                <Route path="/post-link/:postId" element={<PostLink />} />
+                <Route path="/profile-link/:userId" element={<ProfileLink />} />
+                <Route path="/add-moderator/" element={<AddModerator />} />
+
+                <Route path='/admin' element={
+                  <ProtectedRoute user={user} roleRequired={3}>
+                    <Admin />
+                  </ProtectedRoute>
+                } />
+                <Route path='/moderator' element={
+                  <ProtectedRoute user={user} roleRequired={2}>
+                    <Moderator />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+              {!user && <Footer />}
+            </MyDispatchContext.Provider>
+          </MyUserContext.Provider>
+        </BrowserRouter>
+
+      </GoogleOAuthProvider>
+
     </SnackbarProvider>
   );
 };

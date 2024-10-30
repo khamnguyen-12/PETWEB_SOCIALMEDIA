@@ -69,8 +69,8 @@ const styles = css`
   top: 0;
   z-index: 10;
   padding: 20px 0;
-  background-color: #0000CD;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: white;
+  box-shadow: 0 7px 4px rgba(0,0,0,0.4);
 
   .container {
     max-width: 1200px;

@@ -9,8 +9,25 @@ import backgroundImg from '../../images/login3.jpg'; // Import the image
 import friendImg from '../../images/friend.png'
 import giftBoxImg from '../../images/giftbox.png'
 import earthImg from '../../images/earth.png'
+
+
 import GoogleLogin from 'react-google-login';  // Import GoogleLogin
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+
+
+import mini1 from '../../images/bee.png'
+import mini2 from '../../images/cat.png'
+import mini3 from '../../images/chameleon.png'
+import mini4 from '../../images/dog.png'
+import mini5 from '../../images/koala.png'
+import mini6 from '../../images/ecosystem.png'
+import mini7 from '../../images/lion.png'
+import mini8 from '../../images/turtle.png'
+import mini9 from '../../images/mouse.png'
+import mini10 from '../../images/hen.png'
+import mini11 from '../../images/clownfish.png'
 
 const clientId = "29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com";
 
@@ -32,6 +49,7 @@ const Login = ({ setShowSidebar }) => {
     const ox = "https://wallpaperaccess.com/full/4378184.jpg";
     const milkcafe = "https://wallpaperaccess.com/full/5051543.jpg";
     // const backgroundImg = "https://wallpaperaccess.com/full/5051543.jpg";
+    
     useEffect(() => {
         let typewriterInterval;
 
@@ -169,7 +187,7 @@ const Login = ({ setShowSidebar }) => {
 
                 // Sau khi lấy được email từ Google, kiểm tra xem email này có tồn tại trong hệ thống không
                 let emailCheckRes = await APIs.post(endpoints['check_email_exist'], { email: userEmailFromGoogle, password: "111" });
-                
+
                 console.log("Status emailCheckRes", emailCheckRes.status)
 
 
@@ -196,20 +214,20 @@ const Login = ({ setShowSidebar }) => {
                     console.log("Data sent loginRes:", loginRes.data);
                     console.log("Status loginRes", loginRes.status);
                     console.log("Access token từ hệ thống:", loginRes.data.access_token);
-        
-        
+
+
 
                     if (loginRes.status === 200) {
                         console.log("Đăng nhập thành công với username:", username);
                         console.log("Access token từ hệ thống:", loginRes.data.access_token);
-                         cookie.save("token", loginRes.data.access_token, { path: '/' });
+                        cookie.save("token", loginRes.data.access_token, { path: '/' });
 
                         // Lấy thông tin người dùng
                         let userdata = await authAPI().get(endpoints['current_user']);
 
 
                         console.log("Status userdata BE ", userdata.status)
-                        
+
                         console.log("Thông tin người dùng sau khi đăng nhập:", userdata.data);
 
 
@@ -284,44 +302,47 @@ const Login = ({ setShowSidebar }) => {
                         <span style={styles.blinkingCursor}> </span>
                     </span>
                 </div>
-                <Row className="justify-content-md-end" style={{ width: '100%' }}>
-                    <div className="card p-3 shadow bg-white rounded" style={styles.card}>
-                        <Form>
-                            <h1 className="text-center mb-3">Đăng nhập</h1>
-                            <Form.Group controlId="formBasicEmail" style={styles.formGroup}>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Nhập tên đăng nhập"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    required
-                                    isInvalid={!!usernameError}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {usernameError}
-                                </Form.Control.Feedback>
-                            </Form.Group>
+                <Row className="justify-content-md-end" style={{
+                    width: '100%', paddingTop: '111px', paddingRight: '32px'
 
-                            <Form.Group controlId="formBasicPassword" style={styles.formGroup}>
-                                <Form.Control
-                                    type="password"
-                                    placeholder="Nhập mật khẩu"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    isInvalid={!!passwordError}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {passwordError}
-                                </Form.Control.Feedback>
-                            </Form.Group>
+                }}>
+                    <div style={styles.card}>
+                        <Form style={styles.formLogin}>
+                            <h1 style={{
+                                color: '#0077B6',
+                            }} className="text-center mb-3">Đăng nhập</h1>
 
-                            <Form.Group controlId="formBasicCheckbox" className="d-flex justify-content-between align-items-center" style={styles.checkboxGroup}>
-                                <Form.Check type="checkbox" label="Nhớ tài khoản" />
-                                <Button variant="link" onClick={() => { /* Xử lý quên mật khẩu */ }}>
-                                    Quên mật khẩu
-                                </Button>
-                            </Form.Group>
+
+                            <div style={{ paddingTop: '12px' }}>
+                                <Form.Group controlId="formBasicEmail" style={styles.formGroup}>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Nhập tên đăng nhập"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        required
+                                        isInvalid={!!usernameError}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {usernameError}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+
+                                <Form.Group controlId="formBasicPassword" style={styles.formGroup}>
+                                    <Form.Control
+                                        type="password"
+                                        placeholder="Nhập mật khẩu"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        isInvalid={!!passwordError}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {passwordError}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            </div>
+
 
                             {error && <p style={styles.errorText}>{error}</p>} {/* Hiển thị lỗi */}
 
@@ -335,6 +356,19 @@ const Login = ({ setShowSidebar }) => {
                             >
                                 {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                             </Button>
+
+
+                            {/* Đường line với chữ "hoặc" */}
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                textAlign: 'center',
+                                margin: 'px 0'
+                            }}>
+                                <hr style={{ flex: 1, borderColor: '#ccc' }} />
+                                <span style={{ padding: '0 2px', color: '#91BBE5', fontWeight: 'bold' }}>hoặc</span>
+                                <hr style={{ flex: 1, borderColor: '#ccc' }} />
+                            </div>
 
                             {/* Nút đăng nhập bằng Google */}
                             <div className="text-center mt-3">
@@ -350,7 +384,7 @@ const Login = ({ setShowSidebar }) => {
 
                             <div className="text-center mt-3">
                                 <a href="#" onClick={register} style={styles.registerLink}>
-                                    Quên tài khoản? Đăng ký
+                                    Nếu bạn chưa có tài khoản? Đăng ký
                                 </a>
                             </div>
                         </Form>
@@ -363,13 +397,38 @@ const Login = ({ setShowSidebar }) => {
                 {/* Heading */}
                 <div style={styles.headingContainer}>
                     <span style={styles.headingText}>Bạn sẽ có những trải nghiệm cực thú vị cùng thú cưng</span>
+                    {/* Dòng chứa các hình ảnh nằm ngang */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '20px',
+                        margin: '30px 0',
+                    }}>
+                        <img src={mini1} alt="bee" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini2} alt="cat" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini3} alt="chameleon" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini4} alt="dog" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini5} alt="koala" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini6} alt="ecosystem" style={{ width: '80px', height: '80px', marginTop: '-20px' }} />
+                        <img src={mini7} alt="lion" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini8} alt="turtle" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini9} alt="mouse" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini10} alt="hen" style={{ width: '40px', height: '40px' }} />
+                        <img src={mini11} alt="clownfish" style={{ width: '40px', height: '40px' }} />
+                    </div>
+
                 </div>
+
+
 
                 {/* Icon and Description - Section 1 */}
                 <div style={styles.iconAndDescription}>
                     <img src={earthImg} alt="earth icon" style={styles.icon} />
                     <div style={styles.descriptionText}>
-                        <h3>Mạng xã hội</h3>
+                        <h3 style={{
+                            fontWeight: 'bold',
+                            color: '#213863'
+                        }}>Mạng xã hội</h3>
                         <p>
                             Đăng lên những hình ảnh, video ghi lại những khoảnh khắc vui vẻ cùng nhau.
                             Kết giao với những người thú vị, tham gia vào các club theo sở thích để xem các nội dung hay.
@@ -379,7 +438,7 @@ const Login = ({ setShowSidebar }) => {
                 </div>
 
                 {/* Card Section - User with Dog */}
-                <div className="card p-3 shadow bg-white rounded" style={styles.card}>
+                <div className="card p-3 shadow bg-white rounded" style={styles.cards}>
                     <img src={corgi} alt="User with Dog" style={styles.cardImage} />
                     <div style={styles.caption}>
                         <strong>SAM</strong>
@@ -401,7 +460,7 @@ const Login = ({ setShowSidebar }) => {
                 </div>
 
                 {/* Card Section - User with Cat */}
-                <div className="card p-3 shadow bg-white rounded" style={styles.card}>
+                <div className="card p-3 shadow bg-white rounded" style={styles.cards}>
                     <img src={ox} alt="User with Cat" style={styles.cardImage} />
                     <div style={styles.caption}>
                         <strong>MIA</strong>
@@ -424,7 +483,7 @@ const Login = ({ setShowSidebar }) => {
                 </div>
 
                 {/* Card Section - User with Parrot */}
-                <div className="card p-3 shadow bg-white rounded" style={styles.card}>
+                <div className="card p-3 shadow bg-white rounded" style={styles.cards}>
                     <img src={milkcafe} alt="User with Parrot" style={styles.cardImage} />
                     <div style={styles.caption}>
                         <strong>Milk & Coffee</strong>
@@ -442,6 +501,24 @@ const Login = ({ setShowSidebar }) => {
 }
 
 const styles = {
+
+
+    formLogin: {
+        paddingTop: '12px'
+
+    },
+    formGroup: {
+        paddingTop: '2px',
+        width: '266px',
+    },
+    loginButton: {
+        backgroundColor: '#F4A82C',
+    },
+    registerLink: {
+        color: '#FF0035',
+        pointer: 'curser',
+    },
+
     // Background and container settings
     container: {
         height: '100vh',
@@ -489,19 +566,19 @@ const styles = {
         gap: '20px',  // Khoảng cách giữa các phần tử
         padding: '0 100px',
         maxWidth: '100%',  // Không tràn màn hình
+        backgroundColor: 'white',
     },
 
     // Heading section
     headingContainer: {
         gridColumn: 'span 2',  // Tiêu đề chiếm 2 cột
-        textAlign: 'left',
-        marginBottom: '20px',
+        textAlign: 'center',
+        margin: '50px',
     },
     headingText: {
-        paddingTop: '100px',
-        fontSize: '32px',
+        fontSize: '62px',
         fontWeight: 'bold',
-        color: '#333',
+        color: '#227C9D',
     },
 
     iconAndDescription: {
@@ -517,7 +594,7 @@ const styles = {
     },
     descriptionText: {
         color: '#333',
-        fontSize: '18px',
+        fontSize: '23px',
         margin: 0,  // Đảm bảo không có margin làm ảnh hưởng đến căn chỉnh
     },
     h3: {
@@ -525,6 +602,18 @@ const styles = {
     },
     // Card section
     card: {
+        maxWidth: '350px',
+        height: '420px',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',  // Căn giữa nội dung trong thẻ
+        backgroundColor: 'white',  // Màu nền của form
+        // borderRadius: '10%'
+        border: '4px solid #90E0EF',
+    },
+
+    cards: {
         maxWidth: '400px',
         width: '100%',
         display: 'flex',

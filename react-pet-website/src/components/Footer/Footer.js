@@ -8,9 +8,9 @@ const Footer = () => {
     return (
         <footer css={styles}>
             <Container>
-                <FooterCard cardHeading="Hotel">
+                <FooterCard cardHeading="PetWeb Social Media">
                     <div className="firstCard">
-                        <p>34Nguyen Van Tao, TP HCM</p>
+                        <p>Go Vap, TP HCM</p>
                         <a href="">+84 345 868 6868</a>
                         <a href="">hotel@gmail.com</a>
                         <div className="social">
@@ -49,7 +49,8 @@ const Footer = () => {
 
 const styles = css`
     width: 100%;
-    background: #000;
+    background: #FFB0A9;
+
     .container {
         padding: 150px 0;
         max-width: 1200px;
@@ -57,55 +58,72 @@ const styles = css`
         border-bottom: 1px solid rgb(26, 26, 26);
         justify-content: space-between;
     }
+
     .footerCard {
+        .cardHeading {
+            color: #AEE4FF; /* Màu cho cardHeading */
+            font-weight: bold;
+            font-size: 18px;
+        }
+
         .firstCard {
             display: flex;
             flex-direction: column;
             padding: 40px 0 0 0;
-            p {
-                color: #ccc;
+
+            p, a, .social i {
+                color: #EE6457; /* Áp dụng màu cho tất cả văn bản ngoại trừ cardHeading */
             }
+
             a {
-                color: #ccc;
                 padding: 10px 0 0 0;
                 text-decoration: none;
                 transition: 400ms ease-in-out;
+
                 &:hover {
                     color: red;
                 }
             }
+
             .social {
                 display: flex;
                 padding: 40px 0 0 0;
+
                 i {
-                    color: #ccc;
                     margin: 0 10px 0 0;
                     cursor: pointer;
                     transition: all 300ms ease-in-out;
+
                     &:hover {
                         color: red;
                     }
                 }
             }
         }
+
         .usefulLinks {
             padding: 40px 0 0 0;
             display: flex;
             flex-direction: column;
+
             a {
-                color: #ccc;
+                color: #EE6457; /* Màu cho các liên kết trong usefulLinks */
                 padding: 10px 0 0 0;
                 text-decoration: none;
                 transition: 400ms ease-in-out;
+
                 &:hover {
                     color: red;
                 }
             }
         }
+
         .subscribe {
             padding: 40px 0 0 0;
+
             .input {
                 position: relative;
+
                 input {
                     height: 44px;
                     padding: 10px;
@@ -114,6 +132,7 @@ const styles = css`
                     border: none;
                     outline: none;
                 }
+
                 button {
                     position: absolute;
                     top: 50%;
@@ -124,17 +143,20 @@ const styles = css`
                     border-radius: 10px;
                 }
             }
+
             p {
-                color: #ccc;
+                color: #EE6457; /* Màu cho văn bản trong subscribe */
                 padding: 20px 0 0 0;
             }
         }
     }
+
     .copyright {
         p {
             padding: 20px 0;
-            color: #ccc;
+            color: #EE6457; /* Màu cho văn bản trong copyright */
             text-align: center;
+
             i {
                 color: red;
                 cursor: pointer;
@@ -142,30 +164,36 @@ const styles = css`
         }
     }
 
+    /* Responsive adjustments */
     @media(max-width: 700px) {
         .container {
             padding: 100px 0;
             flex-wrap: wrap;
+
             .footerCard {
                 max-width: 200px;
-                /* border: 1px solid green; */
+
                 &:nth-child(3) {
                     max-width: 400px;
                     padding: 30px 0 0 0;
                 }
             }
         }
+
         .copyright {
             max-width: 400px;
             margin: 0 auto;
         }
     }
+
     @media (min-width: 701px) and (max-width: 1000px) {
         .container {
             padding: 100px 0;
             flex-wrap: wrap;
+
             .footerCard {
                 max-width: 300px;
+
                 &:nth-child(3) {
                     max-width: 400px;
                     padding: 30px 0 0 0;
@@ -173,12 +201,15 @@ const styles = css`
             }
         }
     }
+
     @media (min-width: 1001px) and (max-width: 1200px) {
         .container {
             padding: 100px 0;
             flex-wrap: wrap;
+
             .footerCard {
                 max-width: 200px;
+
                 &:nth-child(3) {
                     max-width: 400px;
                     padding: 30px 0 0 0;
@@ -186,6 +217,7 @@ const styles = css`
             }
         }
     }
-`
+`;
+
 
 export default Footer;
