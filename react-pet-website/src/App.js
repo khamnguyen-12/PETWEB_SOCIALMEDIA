@@ -29,7 +29,9 @@ import ProfileLink from './components/ModeratorLink/ProfileLink'
 import adminPNG from './images/setting.png'
 import Admin from './components/Admin/Admin';
 import AddModerator from './components/Admin/AddModerator';
-
+import LoginBtn from './components/oauth2/login';
+import LogoutBtn from './components/oauth2/logout';
+import { gapi } from 'gapi-script';
 
 const clientID = "29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com";
 
@@ -46,6 +48,28 @@ const App = () => {
   }, [user]);
 
 
+  //   useEffect(() => {
+  //     function start() {
+  //       gapi.client.init({
+  //         clientID: clientID,
+  //         scope: ""
+  //       })
+  //     }
+  //     gapi.load('client:auth2', start);
+  //   });
+
+  // return (
+  //   <div className='App'>
+  //     <LoginBtn />
+
+  //     <LogoutBtn />
+
+  //   </div>
+  // )
+  // }
+  // export default App;
+
+
   //Phần chính 
   const ProtectedRoute = ({ user, roleRequired, children }) => {
     if (!user || user.role !== roleRequired) {
@@ -59,51 +83,51 @@ const App = () => {
 
   return (
     <SnackbarProvider maxSnack={3}>
+      <BrowserRouter>
+        <MyUserContext.Provider value={user}>
+          <MyDispatchContext.Provider value={dispatch}>
+            <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
+
+            <Routes>
+              <Route
+                exact
+                path='/'
+                element={user ? <MainContent /> : <Navigate to="/login" replace />}
+              />
+              {/* <Route
+                  path='/login'
+                  element={
+                    <Login />
+                  }
+                /> */}
+              <Route path='/login' element={<Login setShowSidebar={setShowSidebar} />} />
 
 
+              <Route path='/signup' element={<Signup />} />
+              <Route path='/profile' element={<Profile />} />
+              <Route path="/post/:id" element={<DetailPost />} />
+              <Route path="/post/:id/comments" element={<Comment />} />
+              <Route path="/petpost/" element={<Petpost />} />
+              <Route path="/report/:postId" element={<Report />} />
+              <Route path="/post-link/:postId" element={<PostLink />} />
+              <Route path="/profile-link/:userId" element={<ProfileLink />} />
+              <Route path="/add-moderator/" element={<AddModerator />} />
 
-        <BrowserRouter>
-          <MyUserContext.Provider value={user}>
-            <MyDispatchContext.Provider value={dispatch}>
-              <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
-
-              <Routes>
-                <Route
-                  exact
-                  path='/'
-                  element={user ? <MainContent /> : <Navigate to="/login" replace />}
-                />
-
-                <Route path='/login' element={<Login setShowSidebar={setShowSidebar} />} />
-
-
-                <Route path='/signup' element={<Signup />} />
-                <Route path='/profile' element={<Profile />} />
-                <Route path="/post/:id" element={<DetailPost />} />
-                <Route path="/post/:id/comments" element={<Comment />} />
-                <Route path="/petpost/" element={<Petpost />} />
-                <Route path="/report/:postId" element={<Report />} />
-                <Route path="/post-link/:postId" element={<PostLink />} />
-                <Route path="/profile-link/:userId" element={<ProfileLink />} />
-                <Route path="/add-moderator/" element={<AddModerator />} />
-
-                <Route path='/admin' element={
-                  <ProtectedRoute user={user} roleRequired={3}>
-                    <Admin />
-                  </ProtectedRoute>
-                } />
-                <Route path='/moderator' element={
-                  <ProtectedRoute user={user} roleRequired={2}>
-                    <Moderator />
-                  </ProtectedRoute>
-                } />
-              </Routes>
-              {!user && <Footer />}
-            </MyDispatchContext.Provider>
-          </MyUserContext.Provider>
-        </BrowserRouter>
-
-
+              <Route path='/admin' element={
+                <ProtectedRoute user={user} roleRequired={3}>
+                  <Admin />
+                </ProtectedRoute>
+              } />
+              <Route path='/moderator' element={
+                <ProtectedRoute user={user} roleRequired={2}>
+                  <Moderator />
+                </ProtectedRoute>
+              } />
+            </Routes>
+            {!user && <Footer />}
+          </MyDispatchContext.Provider>
+        </MyUserContext.Provider>
+      </BrowserRouter>
     </SnackbarProvider>
   );
 };
@@ -175,7 +199,7 @@ const sidebarStyles = {
   background: 'linear-gradient(66deg, #1ab7ea, #1769ff)',
   position: 'fixed',
   top: '15px',
-  left: '50px',
+  left: '200px',
   width: '200px',
   height: '75%',
   padding: '20px',
@@ -205,7 +229,3 @@ const buttonWrapperStyles = {
 };
 
 export default App;
-
-
-
-
