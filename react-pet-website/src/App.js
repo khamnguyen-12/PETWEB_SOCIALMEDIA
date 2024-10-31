@@ -29,7 +29,6 @@ import ProfileLink from './components/ModeratorLink/ProfileLink'
 import adminPNG from './images/setting.png'
 import Admin from './components/Admin/Admin';
 import AddModerator from './components/Admin/AddModerator';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
 const clientID = "29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com";
@@ -61,7 +60,6 @@ const App = () => {
   return (
     <SnackbarProvider maxSnack={3}>
 
-      <GoogleOAuthProvider clientId="29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com">
 
 
         <BrowserRouter>
@@ -105,7 +103,6 @@ const App = () => {
           </MyUserContext.Provider>
         </BrowserRouter>
 
-      </GoogleOAuthProvider>
 
     </SnackbarProvider>
   );
@@ -206,8 +203,6 @@ const buttonWrapperStyles = {
   textAlign: 'center',
   marginBottom: '20px',
 };
-
-
 
 export default App;
 

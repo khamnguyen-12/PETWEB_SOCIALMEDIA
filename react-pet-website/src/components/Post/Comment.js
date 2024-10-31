@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import defaultAvatar from '../../images/avatarModel.jpg';
 import { authAPI, endpoints } from "../../configs/APIs";
-import ModalImage from "react-modal-image";
+// import ModalImage from "react-modal-image";
 
 
 const Comment = () => {
