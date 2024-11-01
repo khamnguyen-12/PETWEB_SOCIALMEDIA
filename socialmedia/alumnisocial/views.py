@@ -246,6 +246,22 @@ class UserViewSet(viewsets.ViewSet,
         else:
             return Response({"exists": False, "detail": "Email chưa tồn tại."}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['patch'], url_path='update-avatar')
+    def update_avatar(self, request, pk=None):
+        """
+        Cập nhật avatar của người dùng.
+        """
+        try:
+            user = self.get_object()  # Lấy người dùng theo ID
+            serializer = self.get_serializer(user, data=request.data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()  # Lưu thay đổi
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
 class PostViewSet(viewsets.ViewSet,
                   generics.ListAPIView,
@@ -571,15 +587,29 @@ class PetPostViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='topic/(?P<topic_id>[^/.]+)')
     def list_by_topic(self, request, topic_id=None):
         """
-        Lọc và trả về danh sách PetPost theo topic_id.
+        Lọc và trả về danh sách PetPost theo topic_id, bao gồm cả số lượng PetPost.
         """
         try:
             # Tìm Topic theo topic_id
             topic = Topic.objects.get(pk=topic_id)
-            # Lọc các PetPost thuộc về Topic này và active=True
+            # Lọc các PetPost thuộc Topic này với active=True
             pet_posts = PetPost.objects.filter(topic=topic, active=True)
+            # Đếm số lượng PetPost
+            post_count = pet_posts.count()
+            # Serialize danh sách PetPost
             serializer = self.get_serializer(pet_posts, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+            # Định dạng dữ liệu phản hồi với post_count và danh sách PetPost
+            response_data = {
+                'topic': {
+                    'id': topic.id,
+                    'name': topic.name
+                },
+                'post_count': post_count,
+                'posts': serializer.data
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
         except Topic.DoesNotExist:
             return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -641,5 +671,3 @@ class PostReportViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(report)
         return Response(serializer.data)
-
-

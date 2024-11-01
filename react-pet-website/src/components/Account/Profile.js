@@ -1,19 +1,13 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { MyUserContext, MyDispatchContext } from '../../configs/MyContext';
 import { useNavigate } from 'react-router-dom';
-import cookie from 'react-cookies';
 import { authAPI, endpoints } from '../../configs/APIs';
 import defaultCover from '../../images/cover.jpeg';
 import defaultAvatar from '../../images/avatarModel.jpg';
 import likeIcon from '../../images/love.png';  // Biểu tượng Yêu thích
 import commentIcon from '../../images/comment.png';  // Biểu tượng Bình luận
 import reportPNG from '../../images/exclamation.png';
-import { jsx, css } from '@emotion/react';
-import earthPost1 from '../../images/earthPost1.png';
-import heart from '../../images/heart.gif';
-import likeGif from '../../images/like.gif';
-import sadGif from '../../images/sad.gif';
-import laughGif from '../../images/laugh.gif';
+
 
 const Profile = () => {
     const [userData, setUserData] = useState(null);
@@ -111,12 +105,21 @@ const Profile = () => {
         }
     };
     const handleAvatarChange = (event) => {
-        setNewAvatar(event.target.files[0]);
+        if (event.target.files[0]) {
+            setNewAvatar(event.target.files[0]);
+        }
     };
 
+
+
+
+
     const handleCoverImageChange = (event) => {
-        setNewCoverImage(event.target.files[0]);
+        if (event.target.files[0]) {
+            setNewCoverImage(event.target.files[0]);
+        }
     };
+
 
 
     // Hàm mở modal khi nhấn vào ảnh
@@ -144,7 +147,7 @@ const Profile = () => {
         const formData = new FormData();
 
         if (newAvatar) formData.append('avatar', newAvatar);
-        if (newCoverImage) formData.append('cover_image', newCoverImage);
+        // if (newCoverImage) formData.append('cover_image', newCoverImage);
 
         try {
             setLoading(true);
@@ -161,6 +164,10 @@ const Profile = () => {
             console.log("Response Status:", response.status);
             console.log("Response Data:", response.data);
             alert('Cập nhật avatar thành công!');
+
+            fetchUserData();
+
+
         } catch (error) {
             console.error('Lỗi cập nhật avatar:', error.response?.data || error.message);
 
@@ -175,7 +182,32 @@ const Profile = () => {
             setLoading(false);
         }
     };
+    const handleUpdateCoverImage = async (userId) => {
+        const formData = new FormData();
+        if (newCoverImage) formData.append('cover_image', newCoverImage);
+    
+        try {
+            setLoading(true);
+            const response = await authAPI().patch(endpoints.patch_profile(userId), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            alert('Cập nhật ảnh bìa thành công!');
 
+
+            console.log("Response Status:", response.status);
+            console.log("Response Data:", response.data);
+
+
+            fetchUserData();
+        } catch (error) {
+            console.error('Lỗi cập nhật ảnh bìa:', error.response?.data || error.message);
+            alert('Có lỗi xảy ra khi cập nhật ảnh bìa.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!userData) {
         return <div style={styles.loading}>Loading...</div>;
@@ -239,20 +271,6 @@ const Profile = () => {
         navigate(`/report/${postId}`);
     };
 
-    const getReactionIcon = (type) => {
-        switch (type) {
-            case 1:
-                return likeGif; // Hoặc biểu tượng tương ứng với type 1
-            case 2:
-                return laughGif; // Hoặc biểu tượng tương ứng với type 2
-            case 3:
-                return heart; // Hoặc biểu tượng tương ứng với type 3
-            case 4:
-                return sadGif; // Hoặc biểu tượng tương ứng với type 4
-            default:
-                return likeIcon; // Biểu tượng mặc định
-        }
-    };
     return (
         <div style={styles.profileContainer}>
             {/* Modal hiển thị hình ảnh được phóng to */}
@@ -260,15 +278,30 @@ const Profile = () => {
                 <div style={styles.modalOverlay} onClick={handleCloseModal}>
                     <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <img src={modalImage} alt="Modal Image" style={styles.modalImage} />
+
+                        {/* Input chọn ảnh avatar */}
                         <input
                             type="file"
-                            onChange={handleChangeImage}
+                            onChange={handleAvatarChange}
                             style={styles.fileInput}
                         />
-                        {/* <button style={styles.updateButton} onClick={handleUpdateAvatar}>
-                            Đổi ảnh
-                        </button> */}
-                        <button onClick={() => handleUpdateAvatar(userData.id)}>Cập nhật ảnh</button>
+
+                        {/* Chỉ hiện nút cập nhật avatar khi đã chọn ảnh avatar */}
+                        {newAvatar && (
+                            <button onClick={() => handleUpdateAvatar(userData.id)}>Cập nhật avatar</button>
+                        )}
+
+                        {/* Input chọn ảnh bìa */}
+                        <input
+                            type="file"
+                            onChange={handleCoverImageChange}
+                            style={styles.fileInput}
+                        />
+
+                        {/* Chỉ hiện nút cập nhật ảnh bìa khi đã chọn ảnh bìa */}
+                        {newCoverImage && (
+                            <button onClick={() => handleUpdateCoverImage(userData.id)}>Cập nhật ảnh bìa</button>
+                        )}
 
                         <button style={styles.closeButton} onClick={handleCloseModal}>Đóng</button>
                     </div>
@@ -500,6 +533,14 @@ const getReactionText = (type) => {
 
 const styles = {
 
+    sidebar: {
+        // paddingRight: '160px'
+    },
+
+
+    mediaContainer: {
+
+    },
 
     separator: {
         width: '100%', // Độ rộng của đường kẻ
@@ -615,16 +656,21 @@ const styles = {
 
     mediaGallery: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+        gridTemplateColumns: 'repeat(3, 1fr)', // Cố định 3 ảnh mỗi hàng
         gap: '10px',
+        border: '1px solid gray',
+        borderRadius: '3px',
+        minHeight: '200px', // Chiều cao tối thiểu cho mediaGallery
+        padding: '10px', // Khoảng trống bên trong để mở rộng vùng viền
     },
 
     mediaImage: {
-        width: '100%',
-        height: '100px',
-        objectFit: 'cover',
-        borderRadius: '10px',
+        width: '100%', // Để ảnh chiếm hết ô lưới
+        height: '90px', // Chiều cao cố định cho mỗi ảnh
+        objectFit: 'cover', // Cắt ảnh để vừa với khung mà không biến dạng
+        borderRadius: '3px', // Tùy chọn để làm mềm góc ảnh
     },
+
     followingContainer: { backgroundColor: '#fff', padding: '15px', borderRadius: '10px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', marginTop: '30px' },
     followingList: { listStyleType: 'none', paddingLeft: '0', fontSize: '16px' },
     postCard: {

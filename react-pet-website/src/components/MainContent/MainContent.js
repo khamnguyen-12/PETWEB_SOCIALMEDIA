@@ -304,7 +304,7 @@ const MainContent = () => {
                     <img src={user.avatar || defaultAvatar} alt="User Avatar" css={styles.avatar} />
                     <input
                         type="text"
-                        placeholder={`${user.first_name} ${user.last_name}, đừng ngần ngại, hãy chia sẻ nhá!`}
+                        placeholder={`${user.first_name} ${user.last_name} đừng ngần ngại, hãy chia sẻ nhá!`}
                         css={styles.searchInput}
                     />
                     <div css={styles.iconContainer}>
@@ -579,7 +579,7 @@ const styles = {
 
     container: css`
         width: 100%;
-        max-width: 600px;
+        max-width: 750px;
         margin: 0 auto;
         padding: 20px;
     `,

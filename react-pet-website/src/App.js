@@ -198,10 +198,10 @@ const buttonLinkStyles = (isActive) => ({
 const sidebarStyles = {
   background: 'linear-gradient(66deg, #1ab7ea, #1769ff)',
   position: 'fixed',
-  top: '15px',
+  top: '25px',
   left: '200px',
   width: '200px',
-  height: '75%',
+  height: '80%',
   padding: '20px',
   boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
   display: 'flex',
@@ -209,10 +209,11 @@ const sidebarStyles = {
   alignItems: 'flex-start',
   borderRadius: '33px',
   justifyContent: 'center',
+  left: '44px',
 };
 const logoStyles = {
   width: '150px', // Kích thước logo
-  marginBottom: '10px', // Khoảng cách dưới logo
+  // marginBottom: '10px', // Khoảng cách dưới logo
   borderRadius: '33px',
 
 };

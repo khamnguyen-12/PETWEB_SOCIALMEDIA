@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { authAPI, endpoints } from '../../configs/APIs';
+import arrowPng from '../../images/next.png';
+
+
 
 const Petpost = () => {
     const [categories, setCategories] = useState([]);
@@ -10,6 +13,7 @@ const Petpost = () => {
     // State để quản lý bài viết được chọn
     const [selectedPost, setSelectedPost] = useState(null);
     const [selectedTopicId, setSelectedTopicId] = useState(null);
+    const [selectedTopic, setSelectedTopic] = useState(''); // Lưu tên topic đã chọn
 
 
 
@@ -73,6 +77,7 @@ const Petpost = () => {
         try {
             const res = await authAPI().get(endpoints['topic']);
 
+
             console.log('List topic:', res.data);
             console.log(res.status);
 
@@ -99,8 +104,10 @@ const Petpost = () => {
         }
     }
 
-    const handleTopicClick = async (topicId) => {
+    const handleTopicClick = async (topicId, topicName) => {
         setSelectedTopicId(topicId);
+        setSelectedTopic(topicName); // Cập nhật tên topic đã chọn
+
         await fetchPetpostByTopic(topicId);
     };
 
@@ -140,7 +147,7 @@ const Petpost = () => {
 
         categoryContainer: {
             width: '300px',                  // Sets a fixed width for the category section
-            backgroundColor: '#f9f9f9',      // Optional: Adds a different background for the category section
+            // backgroundColor: '#f9f9f9',      // Optional: Adds a different background for the category section
             padding: '15px',                 // Adds some padding for the category container
             borderRadius: '8px',             // Optional: Rounds the corners
             boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)', // Adds a subtle shadow effect
@@ -223,6 +230,9 @@ const Petpost = () => {
         topicItem: {
             padding: '5px 0',
             cursor: 'pointer',
+            display: 'flex',            // Sử dụng Flexbox
+            justifyContent: 'space-between', // Đưa nội dung về hai đầu
+            alignItems: 'center'
         },
         fullPostModal: {
             display: modalOpen ? 'block' : 'none',
@@ -265,7 +275,7 @@ const Petpost = () => {
             textAlign: 'right',
             paddingRight: '11px',
             fontStyle: 'italic',
-            color: 'gray',
+            color: '#87CEFA',
         }
     };
 
@@ -276,7 +286,9 @@ const Petpost = () => {
                 <div style={styles.mainContent}>
                     {/* Hiển thị danh sách petpost */}
 
-                    <h2 style={styles.petpostTitle}>Bài viết mới</h2>
+                    <h2 style={styles.petpostTitle}>
+                        {selectedTopic ? ` ${selectedTopic}` : 'Bài viết mới'}
+                    </h2>
                     <ul style={styles.petpostList}>
                         {petposts.length > 0 ? (
                             petposts.map((post) => (
@@ -327,18 +339,44 @@ const Petpost = () => {
                         {categories.length > 0 ? (
                             categories.map((category) => (
                                 <li key={category.id} style={styles.categoryItem}>
-                                    <strong>{category.name}</strong>
+                                    <strong style={{
+
+                                    }}>{category.name}</strong>
                                     {/* Hiển thị danh sách topics thuộc category này */}
                                     <ul style={styles.topicList}>
                                         {getTopicsForCategory(category.id).length > 0 ? (
                                             getTopicsForCategory(category.id).map((topic) => (
                                                 <li
                                                     key={topic.id}
-                                                    style={styles.topicItem}
-                                                    onClick={() => handleTopicClick(topic.id)} // Thêm sự kiện onClick
+                                                    style={{
+                                                        ...styles.topicItem,
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        transition: 'background-color 0.3s, color 0.3s', borderRadius: '22px', // Hiệu ứng chuyển màu
+                                                    }}
+                                                    onClick={() => handleTopicClick(topic.id, topic.name)} // Thêm sự kiện onClick
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.backgroundColor = '#0099FF'; // Màu nền khi hover
+                                                        e.currentTarget.style.color = 'white'; // Màu chữ khi hover
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.backgroundColor = ''; // Đặt lại màu nền khi không hover
+                                                        e.currentTarget.style.color = ''; // Đặt lại màu chữ khi không hover
+                                                    }}
                                                 >
-                                                    {topic.name}
+                                                    <span style={{ flex: 1, padding: '5px' }}>{topic.name}</span>
+                                                    <img
+                                                        src={arrowPng}
+                                                        alt="Arrow"
+                                                        style={{
+                                                            width: '1.5em',
+                                                            height: '1.5em',
+                                                            marginRight: '10px',
+                                                        }}
+                                                    />
                                                 </li>
+
                                             ))
                                         ) : (
                                             <li>Không có topics nào.</li>
@@ -368,9 +406,9 @@ const Petpost = () => {
                                     <p>{selectedPost.content}</p>
 
 
-                                    <div style={{ margin: '20px', paddingTop:'44px', textAlign:'right' }}>
+                                    <div style={{ margin: '20px', paddingTop: '44px', textAlign: 'right' }}>
                                         <h5 >{selectedPost.author?.username || "Tác giả không xác định"}</h5> {/* Thay thế bằng thuộc tính đúng nếu cần */}
-                                        <p style={{fontStyle:'italic', color : 'gray'}}>
+                                        <p style={{ fontStyle: 'italic', color: 'gray' }}>
                                             Ngày tạo: {new Date(selectedPost.created_date).toLocaleDateString('vi-VN')}
                                         </p>
                                     </div>

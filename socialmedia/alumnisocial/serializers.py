@@ -146,7 +146,7 @@ class PetPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PetPost
-        fields = ['id', 'title', 'content', 'image', 'topic', 'topic_id', 'author']
+        fields = ['id', 'title', 'content', 'topic', 'topic_id', 'author']
 
     def validate_author(self, value):
         if value.role != User.Role.MODERATOR:

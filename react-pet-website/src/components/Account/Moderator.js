@@ -624,7 +624,7 @@ const Moderator = () => {
                         {activeSection === 'categories' && (
                             <div style={css.categoryList}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                                    <h3 className="mt-4">Categories</h3>
+                                    <h3 className="mt-4">Danh mục</h3>
                                     <Button
                                         variant="success"
                                         style={css.addButton}
@@ -671,7 +671,7 @@ const Moderator = () => {
                         {activeSection === 'topics' && (
                             <>
                                 <div style={css.headerRow}>
-                                    <h3 className="mt-4">Topics</h3>
+                                    <h3 className="mt-4">Chủ đề</h3>
                                     <Button
                                         variant="success"
                                         style={css.addButton}
@@ -679,7 +679,7 @@ const Moderator = () => {
                                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
                                         onClick={handleAddTopicClick}
                                     >
-                                        Thêm Topic
+                                        Thêm chủ đề
                                     </Button>
 
                                     <Modal show={showTopicModal} onHide={() => setShowTopicModal(false)}>
@@ -720,19 +720,28 @@ const Moderator = () => {
                                     </Modal>
                                 </div>
                                 <ul className="list-group">
+                                    {/* Hàng tiêu đề */}
+                                    <li className="list-group-item" style={{ ...css.listItem, fontWeight: 'bold', backgroundColor: '#f8f9fa' }}>
+                                        <div style={{ ...css.column, width: '40%', borderRight: '1px solid #ddd' }}>Chủ đề</div>
+                                        <div style={{ ...css.column, width: '30%', borderRight: '1px solid #ddd' }}>Danh mục</div>
+                                        <div style={{ ...css.column, width: '30%' }}>Chỉnh</div>
+                                    </li>
+
+                                    {/* Dữ liệu của bảng */}
                                     {topics.map(topic => (
-                                        <li key={topic.id} className="list-group-item" style={css.categoryItem}>
-                                            <div style={css.categoryName}>
-                                                {topic.name} - Danh mục: {topic.category?.name || 'No Category'}
+                                        <li key={topic.id} className="list-group-item" style={css.listItem}>
+                                            <div style={{ ...css.column, width: '40%', borderRight: '1px solid #ddd' }}>{topic.name}</div>
+                                            <div style={{ ...css.column, width: '30%', borderRight: '1px solid #ddd' }}>{topic.category?.name || 'No Category'}</div>
+                                            <div style={{ ...css.column, width: '30%', textAlign: 'center' }}>
                                                 <div style={css.buttonGroup}>
                                                     <button
-                                                        style={css.editButton}
+                                                        style={css.editButtonTopic}
                                                         onClick={() => editTopic(topic.id)}
                                                     >
                                                         Sửa
                                                     </button>
                                                     <button
-                                                        style={css.deleteButton}
+                                                        style={css.deleteButtonTopic}
                                                         onClick={() => deleteTopic(topic.id)}
                                                     >
                                                         Xóa
@@ -742,6 +751,9 @@ const Moderator = () => {
                                         </li>
                                     ))}
                                 </ul>
+
+
+
                             </>
                         )}
 
@@ -753,9 +765,9 @@ const Moderator = () => {
                                     <div style={css.headerFunction}>
 
                                         <h3
-                                            className="mt-4" style={css.petPostsHeader}>Pet Posts</h3>
+                                            className="mt-4" style={css.petPostsHeader}>Danh sách bài viết kiến thức </h3>
 
-                                        <Button onClick={handleShow}> Tạo mới</Button>
+                                        <Button style={css.btnCreatePetpost} onClick={handleShow}> Tạo mới</Button>
                                     </div>
 
 
@@ -843,27 +855,28 @@ const Moderator = () => {
                                     {/* Display fetched pet posts */}
                                     {petPosts.length > 0 ? (
                                         <ul className="list-group mt-4" style={css.petPostList}>
+
+                                            {/* Hàng tiêu đề */}
+                                            <li className="list-group-item" style={{ ...css.petPostItem, fontWeight: 'bold', backgroundColor: '#f8f9fa' }}>
+                                                <div style={{ ...css.column, width: '40%', borderRight: '1px solid #ddd' }}>Tiêu đề</div>
+                                                <div style={{ ...css.column, width: '30%', borderRight: '1px solid #ddd' }}>Chủ đề</div>
+                                                <div style={{ ...css.column, width: '30%' }}>Chỉnh</div>
+                                            </li>
+
                                             {petPosts.map((post) => {
                                                 // Kiểm tra nếu post.image là null hoặc không có giá trị, xử lý đường dẫn ảnh
-                                                const imageUrl = post.image
-                                                    ? post.image.startsWith('http')
-                                                        ? post.image
-                                                        : `https://res.cloudinary.com/dp2lb0arb/${post.image}`
-                                                    : '/image/upload/https://vuipet.com/wp-content/uploads/2021/05/cho-husky.jpg'; // Đường dẫn đến ảnh mặc định
-
                                                 return (
                                                     <li key={post.id} className="list-group-item" style={css.petPostItem}>
-                                                        {/* Bỏ qua tiêu đề và nội dung để chỉ hiển thị tên topic và danh mục */}
-                                                        <small>Title: {post.title} - Topic: {post.topic.name}</small>
-                                                        {/* <img src={imageUrl}></img> */}
-
-
-                                                        <Button style={css.petPostButton} onClick={() => { handleEditClick(post) }}>Sửa</Button>
-                                                        <Button style={css.petPostButton} onClick={() => {
-                                                            deletePetPost(post.id)
-                                                        }}>Xóa</Button>
-
-
+                                                        <div style={{ ...css.column, width: '40%', borderRight: '1px solid #ddd' }}>
+                                                            <small>{post.title}</small>
+                                                        </div>
+                                                        <div style={{ ...css.column, width: '30%', borderRight: '1px solid #ddd' }}>
+                                                            {post.topic.name}
+                                                        </div>
+                                                        <div style={{ ...css.column, width: '30%', textAlign: 'center' }}>
+                                                            <Button style={css.petPostButton} onClick={() => handleEditClick(post)}>Sửa</Button>
+                                                            <Button style={css.petPostButtonDel} onClick={() => deletePetPost(post.id)}>Xóa</Button>
+                                                        </div>
                                                     </li>
                                                 );
                                             })}
@@ -910,13 +923,13 @@ const Moderator = () => {
                                                                     style={{ ...styles.dropdownItem, ...styles.processedItem }}
                                                                     onClick={() => handleStatusChange(report.id, 'processed')}
                                                                 >
-                                                                    Đã giải quyết
+                                                                    Không vi phạm
                                                                 </div>
                                                                 <div
                                                                     style={{ ...styles.dropdownItem, ...styles.rejectedItem }}
                                                                     onClick={() => handleStatusChange(report.id, 'rejected')}
                                                                 >
-                                                                    Bị từ chối
+                                                                    Vi phạm
                                                                 </div>
                                                             </div>
                                                         )}
@@ -941,7 +954,7 @@ const Moderator = () => {
 
             {/* Sidebar bên phải */}
             <div style={{ flex: 2, ...css.sidebar }}>
-                <h4>Actions</h4>
+                <h4>Tùy chọn</h4>
                 <Button
                     variant="primary"
                     onClick={() => fetchDataWithLoading(fetchCategories)} // Gọi hàm dùng chung với fetchCategories
@@ -957,7 +970,7 @@ const Moderator = () => {
                             aria-hidden="true"
                         />
                     ) : (
-                        'Show Categories'
+                        'Danh mục'
                     )}
                 </Button>
 
@@ -976,7 +989,7 @@ const Moderator = () => {
                             aria-hidden="true"
                         />
                     ) : (
-                        'Show Topics'
+                        'Chủ đề'
                     )}
                 </Button>
 
@@ -996,7 +1009,7 @@ const Moderator = () => {
                             aria-hidden="true"
                         />
                     ) : (
-                        'Show PetPost'
+                        'Bài viết kiến thức'
                     )}
                 </Button>
 
@@ -1012,7 +1025,7 @@ const Moderator = () => {
                     {isLoading ? (
                         <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
                     ) : (
-                        'Báo cáo'
+                        'Báo cáo vi phạm'
                     )}
                 </Button>
 
@@ -1169,7 +1182,37 @@ const styles = {
 
 // Hàm chứa CSS
 const css = {
+    btnCreatePetpost:{
+        width: 'auto',
+        minWidth: '120px',
+        backgroundColor: '#28a745',
+        borderColor: '#28a745',
+        borderRadius: '4px',
+        padding: '10px 15px',
+        fontWeight: 'bold',
+        marginTop: '10px',
+        height: '40px',
+        marginTop: '20px'
+    },
+    deleteButtonTopic: {
+        backgroundColor: '#dc3545',
+        color: 'white',
+        border: 'none',
+        padding: '5px 10px',
+        borderRadius: '5px',
+        cursor: 'pointer',
+    },
+    listItem: {
+        display: 'flex',
+        alignItems: 'center',
+        padding: '10px',
+        borderBottom: '1px solid #ddd',
+    },
 
+    column: {
+        padding: '5px 10px',
+        textAlign: 'left',
+    },
     noReport: {
         fontStyle: 'italic',
         color: '#777',
@@ -1187,19 +1230,14 @@ const css = {
     },
 
     petPostList: {
-        width: '100%', // Đảm bảo danh sách rộng 100% vùng hiển thị
-        marginTop: '5px',
-        listStyleType: 'none', // Loại bỏ ký hiệu gạch đầu dòng của ul
-        padding: 0, // Xóa padding mặc định của ul
+        marginTop: '20px',
+        width: '700px'
     },
     petPostItem: {
-        padding: '10px 20px', // Khoảng cách trong của từng mục
-        marginBottom: '10px', // Khoảng cách giữa các mục
-        backgroundColor: '#fff', // Màu nền cho item
-        borderRadius: '8px', // Bo góc
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Hiệu ứng đổ bóng nhẹ
-        fontWeight: '70px',
-        flexGrow: 1,
+        display: 'flex',
+        alignItems: 'center',
+        padding: '10px',
+        borderBottom: '1px solid #ddd',
     },
     container: {
         display: 'flex',
@@ -1214,14 +1252,26 @@ const css = {
         padding: '20px',
         height: '100vh',
         borderLeft: '1px solid #ddd',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
 
+
+    button: {
+        width: '100%', // Đặt độ rộng của nút bằng nhau
+        margin: '5px 0', // Thêm khoảng cách giữa các nút
+        display: 'flex',
+        justifyContent: 'center', // Căn giữa chữ của nút
+        alignItems: 'center',
+        padding: '10px 0'
+    },
     mainContent: {
         padding: '20px',
         paddingLeft: '15%',
         backgroundColor: '#f5f5f5',
         minHeight: '100vh',
-        paddingLeft: '420px'
+        paddingLeft: '290px'
     },
     alertPopup: {
         padding: '10px',
@@ -1251,9 +1301,26 @@ const css = {
 
     petPostButton:
     {
-        padding: '5px',
-        margin: '5px',
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        padding: '5px 10px',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        margin: '0 5px',
     },
+    petPostButtonDel:
+    {
+        backgroundColor: 'red',
+        color: 'white',
+        border: 'none',
+        padding: '5px 10px',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        margin: '0 5px',
+    },
+
+
     card: {
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         borderRadius: '10px',
@@ -1261,10 +1328,19 @@ const css = {
     },
     editButton: {
         padding: '5px 10px',
-        backgroundColor: '#4CAF50', // Màu xanh cho nút sửa
+        backgroundColor: 'blue', // Màu xanh cho nút sửa
         color: 'white',
         border: 'none',
         borderRadius: '4px',
+        cursor: 'pointer',
+    },
+
+    editButtonTopic: {
+        backgroundColor: 'blue',
+        color: 'white',
+        border: 'none',
+        padding: '5px 10px',
+        borderRadius: '5px',
         cursor: 'pointer',
     },
 
@@ -1284,7 +1360,7 @@ const css = {
 
     headerFunction: {
         display: 'flex',
-        gap: '550px',
+        gap: '200px',
         padding: 0,
     },
 
@@ -1302,6 +1378,8 @@ const css = {
     buttonGroup: {
         display: 'flex',
         gap: '10px', // Khoảng cách giữa nút Sửa và Xóa
+        justifyContent: 'center',
+
     },
 
     categoryItemHover: {

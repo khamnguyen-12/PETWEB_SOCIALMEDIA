@@ -136,8 +136,8 @@ class PetPost(BaseModel):
 class Report(BaseModel):
     class Status(models.IntegerChoices):
         PENDING = 1, "Chờ xử lý"
-        RESOLVED = 2, "Đã giải quyết"
-        REJECTED = 3, "Bị từ chối"
+        RESOLVED = 2, "Đã xóa bài viết"
+        REJECTED = 3, "Không xóa bài viết"
 
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reports')

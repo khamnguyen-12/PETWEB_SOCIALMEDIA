@@ -49,7 +49,7 @@ const Login = ({ setShowSidebar }) => {
     const ox = "https://wallpaperaccess.com/full/4378184.jpg";
     const milkcafe = "https://wallpaperaccess.com/full/5051543.jpg";
     // const backgroundImg = "https://wallpaperaccess.com/full/5051543.jpg";
-    
+
     useEffect(() => {
         let typewriterInterval;
 
@@ -166,6 +166,7 @@ const Login = ({ setShowSidebar }) => {
         const tokenId = response.tokenId;
         const accessToken = response.accessToken;  // Lấy access token từ phản hồi của Google
         const email = response.profileObj.email;   // Lấy email từ Google login response
+        setLoading(false); // Tắt loading khi đăng nhập thành công
 
         try {
             console.log("Token ID: ", tokenId);  // Kiểm tra tokenId nhận được từ Google
@@ -285,7 +286,33 @@ const Login = ({ setShowSidebar }) => {
     const onFailureGoogleLogin = (response) => {
         console.log("Google login failed: ", response);
         setError('Đăng nhập Google thất bại');
+        setLoading(false); // Tắt loading khi đăng nhập thất bại
+
     };
+
+
+    const handleLoginClick = () => {
+        setLoading(true); // Bật loading khi bắt đầu đăng nhập
+    };
+
+    // CSS cho hiệu ứng vòng tròn loading
+    const spinnerStyle = {
+        border: "4px solid #f3f3f3", // Màu nền vòng
+        borderTop: "4px solid #3498db", // Màu vòng chính
+        borderRadius: "50%",
+        width: "20px",
+        height: "20px",
+        animation: "spin 1s linear infinite",
+        display: "inline-block",
+        marginRight: "10px" // Khoảng cách với chữ nếu cần
+    };
+
+    const spinAnimation = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
 
     return (
         <>
@@ -370,11 +397,19 @@ const Login = ({ setShowSidebar }) => {
                                 <hr style={{ flex: 1, borderColor: '#ccc' }} />
                             </div>
 
-                            {/* Nút đăng nhập bằng Google */}
                             <div className="text-center mt-3">
+                                {/* Đặt keyframes cho toàn bộ ứng dụng */}
+                                <style>{spinAnimation}</style>
                                 <GoogleLogin
                                     clientId={clientId}
-                                    buttonText="Đăng nhập bằng Google"
+                                    buttonText={
+                                        loading ? (
+                                            <div style={spinnerStyle}></div> // Hiệu ứng loading khi đăng nhập
+                                        ) : (
+                                            "Đăng nhập bằng Google"
+                                        )
+                                    }
+                                    onClick={handleLoginClick}
                                     onSuccess={onSuccessGoogleLogin}
                                     onFailure={onFailureGoogleLogin}
                                     cookiePolicy={'single_host_origin'}
@@ -383,8 +418,9 @@ const Login = ({ setShowSidebar }) => {
 
 
                             <div className="text-center mt-3">
+                                <a>Nếu bạn chưa có tài khoản?  </a>
                                 <a href="#" onClick={register} style={styles.registerLink}>
-                                    Nếu bạn chưa có tài khoản? Đăng ký
+                                    Đăng ký ngay
                                 </a>
                             </div>
                         </Form>
@@ -513,6 +549,7 @@ const styles = {
     },
     loginButton: {
         backgroundColor: '#F4A82C',
+        marginTop: '11px',
     },
     registerLink: {
         color: '#FF0035',
