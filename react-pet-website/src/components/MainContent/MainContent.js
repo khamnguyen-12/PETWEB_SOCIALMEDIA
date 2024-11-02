@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx, css } from '@emotion/react';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { MyDispatchContext, MyUserContext } from '../../configs/MyContext';
 import { endpoints, authAPI } from "../../configs/APIs";
 import { Link, useNavigate } from 'react-router-dom';
@@ -18,6 +18,8 @@ import reportPNG from '../../images/exclamation.png';
 // import sentPost from '../../images/sent.png';
 
 import earthPost1 from '../../images/earthPost1.png';
+import searchPng from '../../images/search.png';
+import hisPng from '../../images/history.png';
 
 
 
@@ -36,9 +38,10 @@ const MainContent = () => {
     const navigate = useNavigate();
     const [reactions, setReactions] = useState({});
     const [commentCounts, setCommentCounts] = useState([]);
-
-    const [modalReport, setModalReport] = useState(false);
-    const [reportReason, setReportReason] = useState('');
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const observer = useRef();
 
     const handleCommentClick = (postId) => {
         setSelectedPost(postId);
@@ -103,12 +106,26 @@ const MainContent = () => {
                 console.error("Failed to fetch posts or reactions:", error);
             }
         };
-
-
         fetchPosts();
+        loadMorePosts();
+
     }, []);
 
+    const lastPostRef = useCallback(
+        (node) => {
+            if (loading) return;
+            if (observer.current) observer.current.disconnect();
 
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && hasMore) {
+                    loadMorePosts();
+                }
+            });
+
+            if (node) observer.current.observe(node);
+        },
+        [loading, hasMore]
+    );
 
     if (!user) {
         return <p>Please log in to view this content.</p>;
@@ -220,6 +237,7 @@ const MainContent = () => {
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
     };
+
     const handleSearchResultClick = (post) => {
         // setSelectedPost(post);
         // setFilteredResults([]); // Ẩn kết quả tìm kiếm sau khi chọn
@@ -228,6 +246,7 @@ const MainContent = () => {
 
 
     };
+
     const getReactionIcon = (type) => {
         switch (type) {
             case 1:
@@ -269,35 +288,63 @@ const MainContent = () => {
         navigate(`/report/${postId}`);
     };
 
-    // // Hàm đóng modal
-    // const closeModal = () => {
-    //     setModalReport(false);    // Đóng modal
-    //     setReportReason('');      // Reset lý do báo cáo
-    // };
+
+    const loadMorePosts = async () => {
+        if (loading || !hasMore) return;
+
+        setLoading(true);
+        try {
+            const response = await authAPI().get(`/posts/list-newest-posts?page=${page}`);
+            const newPosts = response.data.results;
+
+            setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+            setHasMore(response.data.next !== null);
+            setPage((prevPage) => prevPage + 1);
+        } catch (error) {
+            console.error("Error loading posts:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     return (
         <div css={styles.container}>
-            {/* Các phần khác của return */}
-            <div css={styles.newSearchBar}>
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm bài viết hoặc người dùng..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    css={styles.newSearchInput}
-                />
+            <div css={styles.newSearchBarContainer}>
+                <div css={styles.newSearchBar}>
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm bài viết hoặc người dùng..."
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        css={styles.newSearchInput}
+
+                    />
+                    <img src={searchPng} alt="Search" css={styles.searchIcon} /> {/* Logo tìm kiếm */}
+
+
+                </div>
+
+                {filteredResults.length > 0 && (
+                    <div css={styles.searchResults}>
+                        {filteredResults.map((post) => (
+                            <div key={post.id} css={styles.resultItem} onClick={() => handleSearchResultClick(post)}>
+
+                                <img src={hisPng} alt="History Icon" css={styles.historyIcon} /> {/* Logo bên trái */}
+
+                                <p css={styles.resultText}>{post.content}</p> {/* Sử dụng class CSS thay vì inline styles */}
+
+                            </div>
+                        ))}
+
+                    </div>
+                )}
             </div>
 
-            {/* Kết quả tìm kiếm */}
-            {filteredResults.length > 0 && (
-                <div css={styles.searchResults}>
-                    {filteredResults.map((post) => (
-                        <div key={post.id} css={styles.resultItem} onClick={() => handleSearchResultClick(post)}>
-                            <p>{post.content}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
+
+
+
+
             {/* Thanh chia sẻ */}
             <div css={styles.sharePost} onClick={toggleModal}>
                 <div css={styles.searchBar}>
@@ -447,8 +494,8 @@ const MainContent = () => {
             ) : (
                 <div css={styles.postList}>
                     {/* Danh sách các bài đăng */}
-                    {postsToDisplay.map((post) => (
-                        <div key={post.id} css={styles.postCard}>
+                    {postsToDisplay.map((post, index) => (
+                        <div key={post.id} css={styles.postCard} ref={posts.length === index + 1 ? lastPostRef : null}>
                             <div css={styles.postHeader}>
                                 {/* Hiển thị ảnh đại diện của người dùng */}
                                 <img src={post.user.avatar || defaultAvatar} alt="Avatar" css={styles.postAvatar} />
@@ -558,6 +605,7 @@ const MainContent = () => {
                             </div>
                         </div>
                     ))}
+                    {loading && <p>Loading...</p>}
 
                 </div>
             )}
@@ -570,7 +618,36 @@ const MainContent = () => {
 
 const styles = {
 
+    historyIcon: css`
+    width: 20px; /* Đặt kích thước cho logo */
+    height: auto; /* Tự động điều chỉnh chiều cao */
+    margin-right: 10px; /* Khoảng cách giữa logo và nội dung */
+    vertical-align: middle; /* Căn giữa theo chiều dọc với nội dung */
+`,
 
+    resultText: css`
+    text-align: left; /* Căn trái văn bản */
+    padding-top: 0; /* Bỏ padding trên để căn giữa */
+    margin: 0; /* Bỏ margin để không tạo khoảng cách không cần thiết */
+            color: white
+
+`,
+    searchIcon: css`
+        position: absolute; /* Đặt logo ở vị trí tuyệt đối trong input */
+        left: 615px; /* Khoảng cách từ bên trái của input */
+        top: 50%; /* Căn giữa theo chiều dọc */
+        transform: translateY(-50%); /* Căn giữa theo chiều dọc */
+        width: 30px; /* Đặt kích thước cho logo */
+        height: auto; /* Tự động điều chỉnh chiều cao */
+`
+    ,
+    newSearchBarContainer: css`
+        position: relative;
+        width: 100%;
+        max-width: 1000px; /* Đồng bộ độ rộng tối đa với thanh tìm kiếm */
+        margin: 0 auto; /* Căn giữa thanh tìm kiếm */
+`
+    ,
     separator: {
         border: 'none',
         borderTop: '2px solid #ccc',  // Đường kẻ màu xám
@@ -587,13 +664,13 @@ const styles = {
         display: flex;
         justify-content: center;
         margin-bottom: 20px;
-        position: relative; /* Đặt container ở vị trí tương đối để sử dụng absolute bên trong */
-    `,
+        position: relative; /* Để có thể đặt logo bên trong input */
+`,
 
     newSearchInput: css`
         width: 100%;
         max-width: 600px; /* Kích thước mặc định khi chưa focus */
-        padding: 10px;
+    padding: 10px 40px 10px 30px; /* Tạo khoảng cách bên trái để có chỗ cho logo */
         border: 1px solid #ccc;
         border-radius: 20px;
         outline: none;
@@ -612,10 +689,18 @@ const styles = {
         }
     `,
     searchResults: css`
+        position: absolute;
+        width: 100%;
+
         background: #fff;
         border: 1px solid #ccc;
         border-radius: 5px;
         margin-bottom: 20px;
+        z-index: 10; // Đảm bảo nổi lên trên các phần tử khác
+        
+        left: '11%';
+        right: '11%';
+
     `,
     heartAnimation: css`
         position: absolute;
@@ -701,12 +786,20 @@ const styles = {
         object-fit: contain;
     `,
     resultItem: css`
-        padding: 10px;
-        cursor: pointer;
-        &:hover {
-            background: #f0f0f0;
-        }
-    `,
+    padding: 10px;
+    cursor: pointer;
+    background: #00BFFF; /* Nền vàng */
+    color: #000; /* Chữ đen */
+    transition: background 0.3s ease; /* Hiệu ứng chuyển màu mượt */
+
+    display: flex; /* Để logo và văn bản căn hàng ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+
+    &:hover {
+        background: #1E90FF; /* Nền vàng sẫm khi hover */
+    }
+`
+    ,
     modalFooter: css`
         display: flex;
         align-items: center;

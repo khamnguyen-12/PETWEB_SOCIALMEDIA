@@ -19,12 +19,20 @@ const Profile = () => {
     const navigate = useNavigate();
     const logoutRef = useRef();
     const [userPosts, setUserPosts] = useState([]);
+
     const [modalImage, setModalImage] = useState(null); // State cho hình ảnh được phóng to
     const [newAvatar, setNewAvatar] = useState(null);
-    const [newCoverImage, setNewCoverImage] = useState(null);
+
+
     const [loading, setLoading] = useState(false); // Trạng thái loading
     const [posts, setPosts] = useState([]);
     const [selectedPost, setSelectedPost] = useState(null);
+    const fileInputRef = useRef(null); // Dùng useRef để tham chiếu đến input file
+
+    const [coverImageModal, setCoverImageModal] = useState(null); // State cho modal ảnh bìa
+    const [newCoverImage, setNewCoverImage] = useState(null);
+    const [previewCoverImage, setPreviewCoverImage] = useState(null);
+
 
     useEffect(() => {
         if (!user) {
@@ -105,19 +113,32 @@ const Profile = () => {
         }
     };
     const handleAvatarChange = (event) => {
-        if (event.target.files[0]) {
-            setNewAvatar(event.target.files[0]);
+        const file = event.target.files[0];
+        if (file) {
+            const newImageURL = URL.createObjectURL(file);
+            setModalImage(newImageURL); // Cập nhật modalImage bằng ảnh vừa chọn
+            setNewAvatar(file); // Lưu file ảnh để sử dụng cho việc cập nhật avatar
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setNewCoverImage(file);
+
+        // Tạo preview ảnh bằng FileReader
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreviewCoverImage(reader.result);
+        };
+        if (file) {
+            reader.readAsDataURL(file);
         }
     };
 
 
-
-
-
-    const handleCoverImageChange = (event) => {
-        if (event.target.files[0]) {
-            setNewCoverImage(event.target.files[0]);
-        }
+    const handleCoverImageClick = (image) => {
+        setModalImage(image);
+        setCoverImageModal(true);
     };
 
 
@@ -130,7 +151,18 @@ const Profile = () => {
     // Hàm đóng modal
     const handleCloseModal = () => {
         setModalImage(null);
+        setNewAvatar(null); // Đặt lại newAvatar về null để ẩn nút Cập nhật avatar
+
     };
+
+    const handleCloseModalCoverImage = () => {
+        setCoverImageModal(null);
+        setNewCoverImage(null);
+    };
+
+
+
+
     const handleChangeImage = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -144,10 +176,11 @@ const Profile = () => {
 
 
     const handleUpdateAvatar = async (userId) => {
+
         const formData = new FormData();
 
         if (newAvatar) formData.append('avatar', newAvatar);
-        // if (newCoverImage) formData.append('cover_image', newCoverImage);
+        if (newCoverImage) formData.append('cover_image', newCoverImage); // Thêm cover_image nếu có
 
         try {
             setLoading(true);
@@ -161,9 +194,14 @@ const Profile = () => {
                 },
             });
 
+            if (response.status == 200) {
+                setModalImage(null);
+                alert('Cập nhật avatar thành công!')
+            }
+
             console.log("Response Status:", response.status);
             console.log("Response Data:", response.data);
-            alert('Cập nhật avatar thành công!');
+            ;
 
             fetchUserData();
 
@@ -182,10 +220,14 @@ const Profile = () => {
             setLoading(false);
         }
     };
+
+
+
+
     const handleUpdateCoverImage = async (userId) => {
         const formData = new FormData();
         if (newCoverImage) formData.append('cover_image', newCoverImage);
-    
+
         try {
             setLoading(true);
             const response = await authAPI().patch(endpoints.patch_profile(userId), formData, {
@@ -193,6 +235,11 @@ const Profile = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+
+
+
+            setCoverImageModal(null);
+            setNewCoverImage(null);
             alert('Cập nhật ảnh bìa thành công!');
 
 
@@ -279,31 +326,71 @@ const Profile = () => {
                     <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <img src={modalImage} alt="Modal Image" style={styles.modalImage} />
 
-                        {/* Input chọn ảnh avatar */}
-                        <input
-                            type="file"
-                            onChange={handleAvatarChange}
-                            style={styles.fileInput}
-                        />
 
-                        {/* Chỉ hiện nút cập nhật avatar khi đã chọn ảnh avatar */}
-                        {newAvatar && (
-                            <button onClick={() => handleUpdateAvatar(userData.id)}>Cập nhật avatar</button>
-                        )}
+                        <div style={styles.functAvatar}>
+                            {/* Input chọn ảnh avatar */}
+                            <input
+                                type="file"
+                                onChange={handleAvatarChange}
+                                style={{ display: 'none' }} // Ẩn input file
+                                ref={fileInputRef} // Thêm ref để truy cập input từ nút
+                            />
 
-                        {/* Input chọn ảnh bìa */}
-                        <input
-                            type="file"
-                            onChange={handleCoverImageChange}
-                            style={styles.fileInput}
-                        />
+                            {/* Nút chọn ảnh avatar */}
+                            <button
+                                style={styles.selectButton} // Thêm style cho nút
+                                onClick={() => fileInputRef.current.click()} // Mở input khi nhấn nút
+                            >
+                                Chọn ảnh mới
+                            </button>
 
-                        {/* Chỉ hiện nút cập nhật ảnh bìa khi đã chọn ảnh bìa */}
-                        {newCoverImage && (
-                            <button onClick={() => handleUpdateCoverImage(userData.id)}>Cập nhật ảnh bìa</button>
-                        )}
+                            {/* Chỉ hiện nút cập nhật avatar khi đã chọn ảnh avatar */}
+                            {newAvatar && (
+                                <button onClick={() => handleUpdateAvatar(userData.id)}
+                                    style={styles.updateAvatar}>Cập nhật avatar</button>
+                            )}
 
+
+                        </div>
                         <button style={styles.closeButton} onClick={handleCloseModal}>Đóng</button>
+                    </div>
+                </div>
+            )}
+
+
+            {coverImageModal && (
+                <div style={styles.modalOverlay} onClick={() => setCoverImageModal(false)}>
+                    <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        {/* Hiển thị ảnh đã chọn hoặc ảnh hiện tại */}
+                        <img src={previewCoverImage || modalImage} alt="Cover Image" style={styles.modalImage} />
+
+                        <div style={styles.functCover}>
+                            {/* Input chọn ảnh bìa */}
+                            <input
+                                type="file"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }} // Ẩn input file
+                                ref={fileInputRef}
+                            />
+
+                            {/* Nút chọn ảnh bìa */}
+                            <button
+                                style={styles.selectButton}
+                                onClick={() => fileInputRef.current.click()}
+                            >
+                                Chọn ảnh mới
+                            </button>
+
+                            {/* Nút cập nhật ảnh bìa khi đã chọn */}
+                            {newCoverImage && (
+                                <button onClick={() => handleUpdateCoverImage(userData.id)}
+                                    style={styles.updateCoverImage}>
+                                    Cập nhật ảnh bìa
+                                </button>
+                            )}
+                        </div>
+
+                        <button style={styles.closeButton} onClick={handleCloseModalCoverImage}>Đóng</button>
                     </div>
                 </div>
             )}
@@ -313,7 +400,7 @@ const Profile = () => {
                     src={userData.cover_image || defaultCover}
                     alt="Cover"
                     style={styles.coverImage}
-                    onClick={() => handleImageClick(userData.cover_image || defaultCover)} // Sự kiện nhấn vào ảnh bìa
+                    onClick={() => handleCoverImageClick(userData.cover_image || defaultCover)} // Sự kiện nhấn vào ảnh bìa
                 />
                 <div style={styles.avatarContainer}>
                     <img
@@ -533,6 +620,51 @@ const getReactionText = (type) => {
 
 const styles = {
 
+
+    updateCoverImage: {
+        backgroundColor: '#FF6600', // Màu nền của nút
+        color: 'white', // Màu chữ
+        padding: '10px 20px',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        fontSize: '16px',
+        margin: '10px',
+        height: '44px',
+    },
+
+    updateAvatar:
+    {
+        backgroundColor: '#FF6600', // Màu nền của nút
+        color: 'white', // Màu chữ
+        padding: '10px 20px',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        fontSize: '16px',
+        margin: '10px',
+        height: '44px',
+    },
+
+    functAvatar: {
+        display: 'flex'
+    },
+    selectButton: {
+        backgroundColor: '#4CAF50', // Màu nền của nút
+        color: 'white', // Màu chữ
+        padding: '10px 20px',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        fontSize: '16px',
+        marginTop: '10px',
+        width: '150px', // Đặt độ rộng cố định cho nút
+        textAlign: 'center',
+        maxHeight: '44px'
+    },
+
+
+
     sidebar: {
         // paddingRight: '160px'
     },
@@ -601,16 +733,8 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center',
     },
-    modalContent: {
-        backgroundColor: '#fff',
-        padding: '20px',
-        borderRadius: '8px',
-        position: 'relative',
-    },
-    modalImage: {
-        maxWidth: '100%',
-        maxHeight: '400px',
-    },
+
+
     closeButton: {
         position: 'absolute',
         top: '10px',
@@ -746,9 +870,9 @@ const styles = {
     },
     profileContainer: { marginLeft: '260px', marginTop: '50px', padding: '20px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', borderRadius: '10px' },
     profileHeader: { textAlign: 'center', position: 'relative', marginBottom: '50px' },
-    coverImage: { width: '90%', height: '250px', objectFit: 'cover', borderRadius: '10px 10px 0 0' },
+    coverImage: { width: '90%', height: '250px', objectFit: 'cover', borderRadius: '10px 10px 0 0', cursor: 'pointer' },
     avatarContainer: { position: 'absolute', top: '200px', left: '50%', transform: 'translateX(-50%)', width: '150px', height: '150px', borderRadius: '50%', overflow: 'hidden', border: '5px solid #fff', backgroundColor: '#eee' },
-    avatarImage: { width: '100%', height: '100%', objectFit: 'cover' },
+    avatarImage: { width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' },
     userName: { marginTop: '100px', fontSize: '28px', color: '#333' },
     email: { color: '#666', fontSize: '18px', marginTop: '10px', fontStyle: 'italic' },
     profileDetails: { textAlign: 'left', marginTop: '20px', padding: '0 20px' },
@@ -778,24 +902,25 @@ const styles = {
     modalContent: {
         position: 'relative',
         backgroundColor: '#fff',
-        padding: '20px',
+        padding: '15px',
         borderRadius: '10px',
         textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '10px',
+        width: '500px', // Điều chỉnh chiều rộng của modal để thu nhỏ
+        maxWidth: '90%', // Đảm bảo modal không vượt quá màn hình trên thiết bị nhỏ
     },
+
     modalImage: {
-        maxWidth: '90vw',
-        maxHeight: '80vh',
-        objectFit: 'contain',
+        width: '100%', // Đặt kích thước ảnh vừa với modal
+        maxWidth: '300px', // Giới hạn chiều rộng tối đa của ảnh để ảnh nhỏ gọn hơn
+        height: 'auto', // Giữ tỉ lệ của ảnh
+        borderRadius: '8px', // Làm tròn ảnh nhẹ nhàng hơn 
+        margin: '50px 100px',
     },
-    closeButton: {
-        marginTop: '10px',
-        padding: '10px 20px',
-        backgroundColor: '#f44336',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-    },
+
 
 };
 
