@@ -8,6 +8,7 @@ import cookie from 'react-cookies';
 import { MyDispatchContext } from '../../configs/MyContext';
 import { authAPI, endpoints } from '../../configs/APIs';
 
+import bacMor from '../../images/bee.png';
 
 
 const Moderator = () => {
@@ -581,7 +582,7 @@ const Moderator = () => {
 
     return (
         <div style={css.container}>
-
+            {/* <img src={bacMor} alt="Background" style={{ width: '100%', height: 'auto', position: 'absolute', top: 0, left: 0, zIndex: -1 }} /> */}
             {showPopup && (
                 <div style={styles.popup}>
                     <strong>MỪNG TRỞ LẠI</strong><br />
@@ -623,7 +624,7 @@ const Moderator = () => {
                         {/* Hiển thị nội dung dựa trên trạng thái của activeSection */}
                         {activeSection === 'categories' && (
                             <div style={css.categoryList}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <h3 className="mt-4">Danh mục</h3>
                                     <Button
                                         variant="success"
@@ -1182,7 +1183,7 @@ const styles = {
 
 // Hàm chứa CSS
 const css = {
-    btnCreatePetpost:{
+    btnCreatePetpost: {
         width: 'auto',
         minWidth: '120px',
         backgroundColor: '#28a745',
@@ -1243,9 +1244,20 @@ const css = {
         display: 'flex',
         flexDirection: 'row',
         height: '100vh',
+        backgroundImage: `url(${bacMor})`, // Thay 'bacMor' bằng đường dẫn của ảnh nền
+        backgroundSize: 'cover', // Để ảnh phủ kín toàn bộ container
+        backgroundPosition: 'center', // Để căn giữa ảnh trong container
+        backgroundRepeat: 'no-repeat', // Không lặp lại ảnh
     },
 
-
+    // backgroundImage: `url(${bacMor})`,
+    // backgroundSize: 'cover', // Adjusts the image to cover the entire container
+    // backgroundPosition: 'center', // Centers the image within the container
+    // height: '100vh', // Adjust as needed for container height
+    // width: '100%', // Adjust as needed for container width
+    // display: 'flex',
+    // alignItems: 'center',
+    // justifyContent: 'center'
 
     sidebar: {
         backgroundColor: '#f8f9fa',
@@ -1355,7 +1367,7 @@ const css = {
     categoryList: {
         listStyle: 'none',
         padding: 0,
-        margin: '20px 0',
+        // margin: '20px 0',
     },
 
     headerFunction: {

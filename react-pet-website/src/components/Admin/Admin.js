@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI, endpoints } from '../../configs/APIs';
 import { Button, Modal, Form } from 'react-bootstrap';
@@ -13,13 +13,19 @@ const Admin = () => {
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+    const dispatch = useContext(MyDispatchContext);
 
     const handleAdmin = () => {
         alert(`Added new moderator: ${moderatorName}`);
     };
 
+    useEffect(() => {
+        fetchUsers()
+
+    }, []);
+
     const handleLogout = () => {
-        // dispatch({ type: 'logout' });
+        dispatch({ type: 'logout' });
         alert("Logged out!");
         navigate('/login');
     };
@@ -84,7 +90,7 @@ const Admin = () => {
 
 
             {/* Hiển thị avatar người dùng */}
-            {selectedUser && selectedUser.avatar ? (
+            {/* {selectedUser && selectedUser.avatar ? (
                 <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                     <img
                         src={selectedUser.avatar}  // URL của avatar người dùng
@@ -95,7 +101,7 @@ const Admin = () => {
             ) : (
                 <p style={{ textAlign: 'center', marginBottom: '10px' }}>No Avatar</p>
             )}
-            
+             */}
             {/* Sidebar bên phải */}
             <div style={styles.sidebar}>
                 <ul style={styles.sidebarUl}>
@@ -252,7 +258,9 @@ const styles = {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingLeft: '420px',
+        paddingLeft: '280px',
+        width: '1900px',
+
     },
     sidebar: {
         position: 'fixed',
@@ -263,6 +271,7 @@ const styles = {
         backgroundColor: '#f4f4f4',
         padding: '20px',
         boxShadow: '-2px 0 5px rgba(0, 0, 0, 0.1)',
+
     },
     sidebarUl: {
         listStyleType: 'none',
@@ -288,9 +297,11 @@ const styles = {
         color: 'white',
     },
     content: {
-        marginRight: '220px', // Dành chỗ cho sidebar
+        marginRight: '820px', // Dành chỗ cho sidebar
         padding: '20px',
-        width: 'calc(100% - 220px)',
+        width: 'calc(100%)',
+        backgroundColor: '#f8f9fa',
+        maxWidth: '900px'
     },
     input: {
         display: 'block',

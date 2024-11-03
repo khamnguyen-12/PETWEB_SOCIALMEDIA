@@ -48,6 +48,13 @@ const MainContent = () => {
         navigate(`/post/${postId}/comments`); // Chuyển hướng đến trang comment
     };
 
+    const handleSearchResultClick = (post) => {
+        console.log('Navigating to post with ID:', post.id); // Log the post ID to verify it's received
+        setSelectedPost(post);
+
+        navigate(`/post/${post}/comments`); // Chuyển hướng đến trang comment
+    };
+
     useEffect(() => {
         const fetchPosts = async () => {
             try {
@@ -238,14 +245,7 @@ const MainContent = () => {
         setIsModalOpen(!isModalOpen);
     };
 
-    const handleSearchResultClick = (post) => {
-        // setSelectedPost(post);
-        // setFilteredResults([]); // Ẩn kết quả tìm kiếm sau khi chọn
 
-        navigate(`/post/${post.id}`, { state: { post } });
-
-
-    };
 
     const getReactionIcon = (type) => {
         switch (type) {
@@ -308,6 +308,8 @@ const MainContent = () => {
     };
 
 
+
+
     return (
         <div css={styles.container}>
             <div css={styles.newSearchBarContainer}>
@@ -328,7 +330,7 @@ const MainContent = () => {
                 {filteredResults.length > 0 && (
                     <div css={styles.searchResults}>
                         {filteredResults.map((post) => (
-                            <div key={post.id} css={styles.resultItem} onClick={() => handleSearchResultClick(post)}>
+                            <div key={post.id} css={styles.resultItem} onClick={() => handleSearchResultClick(post.id)}>
 
                                 <img src={hisPng} alt="History Icon" css={styles.historyIcon} /> {/* Logo bên trái */}
 

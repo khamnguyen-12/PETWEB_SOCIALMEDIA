@@ -297,14 +297,14 @@ const Login = ({ setShowSidebar }) => {
 
     // CSS cho hiệu ứng vòng tròn loading
     const spinnerStyle = {
-        border: "4px solid #f3f3f3", // Màu nền vòng
-        borderTop: "4px solid #3498db", // Màu vòng chính
-        borderRadius: "50%",
-        width: "20px",
-        height: "20px",
-        animation: "spin 1s linear infinite",
-        display: "inline-block",
-        marginRight: "10px" // Khoảng cách với chữ nếu cần
+        // border: "4px solid #f3f3f3", // Màu nền vòng
+        // borderTop: "4px solid #3498db", // Màu vòng chính
+        // borderRadius: "50%",
+        // width: "20px",
+        // height: "20px",
+        // animation: "spin 1s linear infinite",
+        // display: "inline-block",
+        // marginRight: "10px" // Khoảng cách với chữ nếu cần
     };
 
     const spinAnimation = `
@@ -403,11 +403,13 @@ const Login = ({ setShowSidebar }) => {
                                 <GoogleLogin
                                     clientId={clientId}
                                     buttonText={
-                                        loading ? (
-                                            <div style={spinnerStyle}></div> // Hiệu ứng loading khi đăng nhập
-                                        ) : (
-                                            "Đăng nhập bằng Google"
-                                        )
+                                        // loading ? (
+                                        //     <div style={spinnerStyle}></div> // Hiệu ứng loading khi đăng nhập
+                                        // ) : (
+                                        //     "Đăng nhập bằng Google"
+                                        // )
+
+                                        "Đăng nhập bằng Google"
                                     }
                                     onClick={handleLoginClick}
                                     onSuccess={onSuccessGoogleLogin}

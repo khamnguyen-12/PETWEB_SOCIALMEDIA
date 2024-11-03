@@ -29,9 +29,8 @@ import ProfileLink from './components/ModeratorLink/ProfileLink'
 import adminPNG from './images/setting.png'
 import Admin from './components/Admin/Admin';
 import AddModerator from './components/Admin/AddModerator';
-import LoginBtn from './components/oauth2/login';
-import LogoutBtn from './components/oauth2/logout';
-import { gapi } from 'gapi-script';
+
+import PostSearch from './components/MainContent/PostSearch';
 
 const clientID = "29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com";
 
@@ -112,6 +111,7 @@ const App = () => {
               <Route path="/post-link/:postId" element={<PostLink />} />
               <Route path="/profile-link/:userId" element={<ProfileLink />} />
               <Route path="/add-moderator/" element={<AddModerator />} />
+              <Route path="/posts/:id" element={<PostSearch />} />
 
               <Route path='/admin' element={
                 <ProtectedRoute user={user} roleRequired={3}>
