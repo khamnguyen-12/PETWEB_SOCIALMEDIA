@@ -104,6 +104,12 @@ class UserViewSet(viewsets.ViewSet,
             return [permissions.IsAdminUser()]
         return self.permission_classes
 
+    @action(detail=False, methods=['get'], url_path='moderators')
+    def list_moderators(self, request):
+        moderators = User.objects.filter(role=User.Role.MODERATOR)
+        serializer = self.serializer_class(moderators, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(methods=['get'], url_path='current_user', url_name='current_user', detail=False)
     def current_user(self, request):
         return Response(self.get_serializer(request.user).data, status=status.HTTP_200_OK)
@@ -565,7 +571,7 @@ class PetPostViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        # Ensure only Moderators can create posts
+        # Automatically set the author to the current user if they are a MODERATOR
         if self.request.user.role == User.Role.MODERATOR:
             serializer.save(author=self.request.user)
         else:

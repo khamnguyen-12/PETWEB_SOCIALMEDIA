@@ -140,13 +140,12 @@ class TopicSerializer(serializers.ModelSerializer):
 
 
 class PetPostSerializer(serializers.ModelSerializer):
-    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     topic = TopicSerializer(read_only=True)
     topic_id = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all(), source='topic')
 
     class Meta:
         model = PetPost
-        fields = ['id', 'title', 'content', 'topic', 'topic_id', 'author']
+        fields = ['id', 'title', 'content', 'topic', 'topic_id']
 
     def validate_author(self, value):
         if value.role != User.Role.MODERATOR:

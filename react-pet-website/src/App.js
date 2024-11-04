@@ -16,6 +16,7 @@ import Profile from './components/Account/Profile';
 import DetailPost from './components/Post/DetailPost';
 import Comment from './components/Post/Comment';
 import Moderator from './components/Account/Moderator';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import btnHome from './images/house.png';
 import btnZoo from './images/pets.png';
@@ -81,54 +82,61 @@ const App = () => {
   const isActive = (path, currentPath) => path === currentPath;
 
   return (
-    <SnackbarProvider maxSnack={3}>
-      <BrowserRouter>
-        <MyUserContext.Provider value={user}>
-          <MyDispatchContext.Provider value={dispatch}>
-            <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
 
-            <Routes>
-              <Route
-                exact
-                path='/'
-                element={user ? <MainContent /> : <Navigate to="/login" replace />}
-              />
-              {/* <Route
+
+    <GoogleOAuthProvider clientId={clientID}>
+
+      <SnackbarProvider maxSnack={3}>
+        <BrowserRouter>
+          <MyUserContext.Provider value={user}>
+            <MyDispatchContext.Provider value={dispatch}>
+              <LocationAwareSidebar showSidebar={showSidebar} isActive={isActive} user={user} />
+
+              <Routes>
+                <Route
+                  exact
+                  path='/'
+                  element={user ? <MainContent /> : <Navigate to="/login" replace />}
+                />
+                {/* <Route
                   path='/login'
                   element={
                     <Login />
                   }
                 /> */}
-              <Route path='/login' element={<Login setShowSidebar={setShowSidebar} />} />
+                <Route path='/login' element={<Login setShowSidebar={setShowSidebar} />} />
 
 
-              <Route path='/signup' element={<Signup />} />
-              <Route path='/profile' element={<Profile />} />
-              <Route path="/post/:id" element={<DetailPost />} />
-              <Route path="/post/:id/comments" element={<Comment />} />
-              <Route path="/petpost/" element={<Petpost />} />
-              <Route path="/report/:postId" element={<Report />} />
-              <Route path="/post-link/:postId" element={<PostLink />} />
-              <Route path="/profile-link/:userId" element={<ProfileLink />} />
-              <Route path="/add-moderator/" element={<AddModerator />} />
-              <Route path="/posts/:id" element={<PostSearch />} />
+                <Route path='/signup' element={<Signup />} />
+                <Route path='/profile' element={<Profile />} />
+                <Route path="/post/:id" element={<DetailPost />} />
+                <Route path="/post/:id/comments" element={<Comment />} />
+                <Route path="/petpost/" element={<Petpost />} />
+                <Route path="/report/:postId" element={<Report />} />
+                <Route path="/post-link/:postId" element={<PostLink />} />
+                <Route path="/profile-link/:userId" element={<ProfileLink />} />
+                <Route path="/add-moderator/" element={<AddModerator />} />
+                <Route path="/posts/:id" element={<PostSearch />} />
 
-              <Route path='/admin' element={
-                <ProtectedRoute user={user} roleRequired={3}>
-                  <Admin />
-                </ProtectedRoute>
-              } />
-              <Route path='/moderator' element={
-                <ProtectedRoute user={user} roleRequired={2}>
-                  <Moderator />
-                </ProtectedRoute>
-              } />
-            </Routes>
-            {!user && <Footer />}
-          </MyDispatchContext.Provider>
-        </MyUserContext.Provider>
-      </BrowserRouter>
-    </SnackbarProvider>
+                <Route path='/admin' element={
+                  <ProtectedRoute user={user} roleRequired={3}>
+                    <Admin />
+                  </ProtectedRoute>
+                } />
+                <Route path='/moderator' element={
+                  <ProtectedRoute user={user} roleRequired={2}>
+                    <Moderator />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+              {!user && <Footer />}
+            </MyDispatchContext.Provider>
+          </MyUserContext.Provider>
+        </BrowserRouter>
+      </SnackbarProvider>
+
+    </GoogleOAuthProvider>
+
   );
 };
 

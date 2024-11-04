@@ -247,6 +247,7 @@ const Petpost = () => {
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
             zIndex: 1000,
             display: 'flex',
+            border: '5px solid #48D1CC'
         },
         overlay: {
             display: modalOpen ? 'block' : 'none',
@@ -407,7 +408,7 @@ const Petpost = () => {
 
 
                                     <div style={{ margin: '20px', paddingTop: '44px', textAlign: 'right' }}>
-                                        <h5 >{selectedPost.author?.username || "Tác giả không xác định"}</h5> {/* Thay thế bằng thuộc tính đúng nếu cần */}
+                                        {/* <h5 >{selectedPost.author?.username || "Tác giả không xác định"}</h5> Thay thế bằng thuộc tính đúng nếu cần */}
                                         <p style={{ fontStyle: 'italic', color: 'gray' }}>
                                             Ngày tạo: {new Date(selectedPost.created_date).toLocaleDateString('vi-VN')}
                                         </p>
@@ -424,8 +425,6 @@ const Petpost = () => {
                                         maxHeight: '70vh',
                                         objectFit: 'contain',
                                         marginTop: '-20px', // Nhích lên trên khoảng trống (thay đổi giá trị nếu cần)
-
-
                                     }}
                                     onError={(e) => {
                                         e.target.onerror = null;

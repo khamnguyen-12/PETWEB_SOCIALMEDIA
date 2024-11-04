@@ -11,8 +11,9 @@ import giftBoxImg from '../../images/giftbox.png'
 import earthImg from '../../images/earth.png'
 
 
-import GoogleLogin from 'react-google-login';  // Import GoogleLogin
+// import GoogleLogin from 'react-google-login';  // Import GoogleLogin
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { GoogleLogin } from '@react-oauth/google';
 
 
 
@@ -29,7 +30,11 @@ import mini9 from '../../images/mouse.png'
 import mini10 from '../../images/hen.png'
 import mini11 from '../../images/clownfish.png'
 
-const clientId = "29867196837-3t0kp776q00v5nkjlrrorlrc786p1ke7.apps.googleusercontent.com";
+import { jwtDecode } from "jwt-decode";
+
+
+
+const clientId = "29867196837-mo70g4d85e9360n93pu0crsjmslp82vn.apps.googleusercontent.com";
 
 const typewriterTexts = [" Chó", " Mèo", " Chim", " Hamster"];
 
@@ -285,6 +290,20 @@ const Login = ({ setShowSidebar }) => {
 
     const onFailureGoogleLogin = (response) => {
         console.log("Google login failed: ", response);
+
+        if (response.error === 'popup_closed_by_user') {
+            setError('Bạn đã đóng cửa sổ đăng nhập Google. Vui lòng thử lại.');
+        } else {
+            setError('Đăng nhập Google thất bại. Vui lòng thử lại.');
+        }
+
+        console.error("Error details:", {
+            error: response.error,
+            details: response.details,
+            status: response.status,
+            error_description: response.error_description,
+            error_subtype: response.error_subtype,
+        });
         setError('Đăng nhập Google thất bại');
         setLoading(false); // Tắt loading khi đăng nhập thất bại
 
@@ -295,24 +314,21 @@ const Login = ({ setShowSidebar }) => {
         setLoading(true); // Bật loading khi bắt đầu đăng nhập
     };
 
-    // CSS cho hiệu ứng vòng tròn loading
-    const spinnerStyle = {
-        // border: "4px solid #f3f3f3", // Màu nền vòng
-        // borderTop: "4px solid #3498db", // Màu vòng chính
-        // borderRadius: "50%",
-        // width: "20px",
-        // height: "20px",
-        // animation: "spin 1s linear infinite",
-        // display: "inline-block",
-        // marginRight: "10px" // Khoảng cách với chữ nếu cần
+
+
+
+    const onSuccess = (response) => {
+        const credential = response.credential;
+        const decoded = jwtDecode.default(credential);
+        console.log("User info:", decoded);
+        // Gửi mã `credential` này lên server để xác thực
+    };
+    
+
+    const onError = () => {
+        console.log("Login failed");
     };
 
-    const spinAnimation = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    `;
 
     return (
         <>
@@ -398,24 +414,24 @@ const Login = ({ setShowSidebar }) => {
                             </div>
 
                             <div className="text-center mt-3">
-                                {/* Đặt keyframes cho toàn bộ ứng dụng */}
-                                <style>{spinAnimation}</style>
-                                <GoogleLogin
-                                    clientId={clientId}
-                                    buttonText={
-                                        // loading ? (
-                                        //     <div style={spinnerStyle}></div> // Hiệu ứng loading khi đăng nhập
-                                        // ) : (
-                                        //     "Đăng nhập bằng Google"
-                                        // )
+                                {loading ? (
+                                    <div className="loading-spinner">Đang đăng nhập...</div> // Hiệu ứng loading
+                                ) : (
+                                    // <GoogleLogin
+                                    //     clientId={clientId}
+                                    //     buttonText="Đăng nhập bằng Google"
+                                    //     // onClick={handleLoginClick}
+                                    //     onSuccess={onSuccessGoogleLogin}
+                                    //     onFailure={onFailureGoogleLogin}
+                                    //     cookiePolicy={'single_host_origin'}
+                                    // />
 
-                                        "Đăng nhập bằng Google"
-                                    }
-                                    onClick={handleLoginClick}
-                                    onSuccess={onSuccessGoogleLogin}
-                                    onFailure={onFailureGoogleLogin}
-                                    cookiePolicy={'single_host_origin'}
-                                />
+                                    <GoogleLogin
+                                        onSuccess={onSuccess}
+                                        onError={onError}
+                                        buttonText="Đăng nhập bằng Google"
+                                    />
+                                )}
                             </div>
 
 

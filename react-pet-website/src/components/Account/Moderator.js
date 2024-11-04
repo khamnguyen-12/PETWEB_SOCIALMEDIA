@@ -46,7 +46,7 @@ const Moderator = () => {
     const [formData, setFormData] = useState({
         title: '',
         content: '',
-        author: '',
+        author: '71',
         image: null,
         topic: ''
     });
@@ -528,7 +528,7 @@ const Moderator = () => {
             id: post.id, // Thêm id vào formData để nhận biết khi nào sửa
             title: post.title,
             content: post.content,
-            author: post.author,
+            author: '71',
             topic: post.topic.id, // Giả sử topic có id
             image: null // Xử lý ảnh nếu cần
         });
@@ -802,7 +802,7 @@ const Moderator = () => {
                                                     />
                                                 </Form.Group>
 
-                                                <Form.Group controlId="formAuthor">
+                                                {/* <Form.Group controlId="formAuthor">
                                                     <Form.Label>Author</Form.Label>
                                                     <Form.Control
                                                         type="text"
@@ -811,7 +811,7 @@ const Moderator = () => {
                                                         onChange={handleChange}
                                                         placeholder="Nhập tên tác giả"
                                                     />
-                                                </Form.Group>
+                                                </Form.Group> */}
 
                                                 {/* Sử dụng combobox (select) để hiển thị topics */}
                                                 <Form.Group controlId="formTopic">
