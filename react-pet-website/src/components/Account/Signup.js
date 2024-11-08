@@ -16,7 +16,9 @@ const Signup = () => {
     const nav = useNavigate();
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [step, setStep] = useState(1); // State to control form step
+    const [isDateFocused, setIsDateFocused] = useState(false); // Trạng thái cho biết người dùng đã nhấn vào hay chưa
 
+    const [emailError, setEmailError] = useState('');  // Trạng thái lỗi email
 
     const nextStep = () => setStep(step + 1);
     const prevStep = () => setStep(step - 1);
@@ -25,58 +27,74 @@ const Signup = () => {
         nav('/login');
     };
 
-    const checkUsernameExists = async () => {
+    const handleNextStep = () => {
+        // Xóa lỗi trước khi kiểm tra
+        setError('');
+
+        // Tính tuổi
+        const today = new Date();
+        const birthDate = new Date(date_of_birth);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        // Kiểm tra tuổi
+        if (age < 13) {
+            setError('Bạn phải ít nhất 13 tuổi để đăng ký.');
+            return;
+        }
+
+        // Nếu đủ tuổi thì gọi hàm nextStep để chuyển bước
+        nextStep();
+    };
+
+
+    // const checkUsernameExists = async () => {
+    //     try {
+    //         const response = await APIs.get(`${endpoints['check_username']}?username=${username}`);
+    //         return response.data.exists;
+    //     } catch (error) {
+    //         console.error('Error checking username:', error);
+    //         return false;
+    //     }
+    // };
+
+    const checkEmailExists = async () => {
         try {
-            const response = await APIs.get(`${endpoints['check_username']}?username=${username}`);
-            return response.data.exists;
+            const response = await APIs.get(`${endpoints['check_email_exist']}?email=${email}`);
+            console.log('Email check response:', response);  // Log để kiểm tra kết quả API
+
+            if (response.data.exists) {
+                setEmailError('Email đã được sử dụng.');
+                return true;  // Email đã tồn tại
+            } else {
+                setEmailError('');  // Xóa lỗi nếu email chưa tồn tại
+                return false;  // Email không tồn tại
+            }
         } catch (error) {
-            console.error('Error checking username:', error);
+            console.error('Error checking email:', error);
+            setEmailError('Có lỗi xảy ra khi kiểm tra email. Vui lòng thử lại sau.');
             return false;
         }
     };
 
-    const checkEmailExists = async () => {
-        try {
-            const response = await APIs.get(`${endpoints['check_email']}?email=${email}`);
-            return response.data.exists;
-        } catch (error) {
-            console.error('Error checking email:', error);
-            return false;
-        }
-    };
 
     const handleSignup = async () => {
         try {
             setError('');  // Reset error message
 
+            // Kiểm tra nếu có trường nào bỏ trống
             if (!username || !password || !email || !first_name || !last_name || !gender || !date_of_birth) {
                 setError('Vui lòng điền đầy đủ thông tin.');
                 return;
             }
 
-            // Calculate age
-            const today = new Date();
-            const birthDate = new Date(date_of_birth);
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDifference = today.getMonth() - birthDate.getMonth();
-
-            if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-
-            if (age < 13) {
-                setError('Bạn phải ít nhất 13 tuổi để đăng ký.');
-                return;
-            }
-
-            // Check if username or email already exists
-            const usernameExists = await checkUsernameExists();
+            // Kiểm tra email có tồn tại không
             const emailExists = await checkEmailExists();
-
-            if (usernameExists) {
-                setError('Tên đăng nhập đã tồn tại.');
-                return;
-            }
+            console.log('Email exists:', emailExists);  // Log để kiểm tra kết quả
 
             if (emailExists) {
                 setError('Email đã được sử dụng.');
@@ -119,8 +137,9 @@ const Signup = () => {
         }
     };
 
+
     return (
-        
+
         <Container fluid className="d-flex justify-content-center align-items-center" style={containerStyles}>
             <Row className="justify-content-center">
                 <Col md="8" lg="8"> {/* Increased width for horizontal layout */}
@@ -175,15 +194,20 @@ const Signup = () => {
 
                                     <Form.Group controlId="formBasicDOB">
                                         <Form.Control
-                                            type="date"
+                                            type={isDateFocused ? "date" : "text"} // Chuyển từ "text" sang "date" khi nhấn
                                             value={date_of_birth}
+                                            onFocus={() => setIsDateFocused(true)} // Khi người dùng nhấn vào trường nhập liệu
+                                            onBlur={() => !date_of_birth && setIsDateFocused(false)} // Quay về "text" nếu không có giá trị
                                             onChange={(e) => setDateOfBirth(e.target.value)}
+                                            placeholder="Ngày sinh" // Hiển thị "Ngày sinh" khi chưa nhấn vào
                                             required
                                             style={inputStyles}
                                         />
+                                        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
+
                                     </Form.Group>
 
-                                    <Button variant="primary" type="button" className="w-100 mt-3" onClick={nextStep} style={buttonStyles}>
+                                    <Button variant="primary" type="button" className="w-100 mt-3" onClick={handleNextStep} style={buttonStyles}>
                                         Tiếp tục
                                     </Button>
                                 </div>
@@ -202,6 +226,8 @@ const Signup = () => {
                                             style={inputStyles}
                                         />
                                     </Form.Group>
+                                    {emailError && <Form.Text style={{ color: 'red' }}>{emailError}</Form.Text>}  {/* Hiển thị lỗi dưới email */}
+
 
                                     <Row>
                                         <Col md="6">
@@ -229,6 +255,7 @@ const Signup = () => {
                                             </Form.Group>
                                         </Col>
                                     </Row>
+                                    {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
 
                                     <div className="d-flex justify-content-between mt-3">
                                         <Button variant="secondary" type="button" onClick={prevStep} style={buttonStyles}>

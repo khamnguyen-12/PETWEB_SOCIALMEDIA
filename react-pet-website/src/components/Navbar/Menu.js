@@ -8,14 +8,22 @@ import { MyUserContext, MyDispatchContext } from "../../configs/MyContext";
 const Menu = ({ openMenu }) => {
   const user = useContext(MyUserContext);
   const dispatch = useContext(MyDispatchContext);
-  
+  const scrollDown = () => {
+    window.scrollBy({
+      top: 600, // Khoảng cách cuộn xuống (px)
+      behavior: 'smooth', // Cuộn mượt mà
+    });
+  };
+
   const handleLogout = () => {
     dispatch({ type: "logout" });
   };
 
   return (
     <div css={styles} className={openMenu ? "menu" : "hidden"}>
-      <a><Link to="/">Home</Link></a>
+      <a onClick={scrollDown}>
+        <Link to="/">Giới thiệu</Link>
+      </a>
       {user ? (
         <div className="user-section">
           <a><Link to="/info">{user.name}</Link></a>

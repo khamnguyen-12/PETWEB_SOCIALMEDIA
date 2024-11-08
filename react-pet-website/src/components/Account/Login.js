@@ -323,7 +323,7 @@ const Login = ({ setShowSidebar }) => {
         console.log("User info:", decoded);
         // Gửi mã `credential` này lên server để xác thực
     };
-    
+
 
     const onError = () => {
         console.log("Login failed");
@@ -458,18 +458,24 @@ const Login = ({ setShowSidebar }) => {
                         gap: '20px',
                         margin: '30px 0',
                     }}>
-                        <img src={mini1} alt="bee" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini2} alt="cat" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini3} alt="chameleon" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini4} alt="dog" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini5} alt="koala" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini6} alt="ecosystem" style={{ width: '80px', height: '80px', marginTop: '-20px' }} />
-                        <img src={mini7} alt="lion" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini8} alt="turtle" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini9} alt="mouse" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini10} alt="hen" style={{ width: '40px', height: '40px' }} />
-                        <img src={mini11} alt="clownfish" style={{ width: '40px', height: '40px' }} />
+                        {[mini1, mini2, mini3, mini4, mini5, mini6, mini7, mini8, mini9, mini10, mini11].map((src, index) => (
+                            <img
+                                key={index}
+                                src={src}
+                                alt={`icon-${index}`}
+                                style={{
+                                    width: src === mini6 ? '80px' : '40px',
+                                    height: src === mini6 ? '80px' : '40px',
+                                    marginTop: src === mini6 ? '-20px' : '0',
+                                    transition: 'transform 0.3s ease', // Hiệu ứng chuyển đổi mượt
+                                    cursor: 'pointer', // Thêm con trỏ để dễ nhận biết khi hover
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            />
+                        ))}
                     </div>
+
 
                 </div>
 

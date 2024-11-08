@@ -40,7 +40,7 @@ const Footer = () => {
                     </div>
                 </FooterCard>
             </Container>
-            <div className="copyright">
+            <div className="copyright" style={ {paddingBottom: '9px'}}>
                 <p>Copyright ©2020 All rights reserved | This template is made with <i class="far fa-heart"></i> by Colorlib</p>
             </div>
         </footer>

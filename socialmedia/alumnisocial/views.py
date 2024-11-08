@@ -76,24 +76,6 @@ class UserViewSet(viewsets.ViewSet,
         exists = User.objects.filter(username=username).exists()
         return JsonResponse({'exists': exists})
 
-    def check_email(request):
-        email = request.data.get('email', None)
-
-        if email:
-            try:
-                user = User.objects.get(email=email)
-                return Response({
-                    "exists": True,
-                    "user": {
-                        "id": user.id,
-                        "username": user.username,
-                        "email": user.email
-                    }
-                })
-            except User.DoesNotExist:
-                return Response({"exists": False})
-
-        return Response({"error": "Email not provided"}, status=400)
 
     def get_permissions(self):
         if self.action in ['get_list_posts', 'list_posts', 'update_cover_image']:
@@ -103,6 +85,23 @@ class UserViewSet(viewsets.ViewSet,
         if self.action in ['add_surveys', 'destroy', 'list', 'deactivate_user']:
             return [permissions.IsAdminUser()]
         return self.permission_classes
+
+    # Action để kiểm tra sự tồn tại của email
+    @action(detail=False, methods=['post'], url_path='check-email')
+    def check_email_exists(self, request):
+        """
+        Kiểm tra sự tồn tại của email thông qua action POST.
+        """
+        email = request.data.get('email')  # Lấy email từ body request
+
+        if not email:
+            # Trả về thông báo lỗi nếu không có email
+            return Response({"detail": "Email không được để trống."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Kiểm tra sự tồn tại của email trong cơ sở dữ liệu
+        email_exists = User.objects.filter(email=email).exists()
+
+        return Response({"exists": email_exists}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='moderators')
     def list_moderators(self, request):
@@ -144,7 +143,7 @@ class UserViewSet(viewsets.ViewSet,
     @action(methods=['get'], detail=False, url_path='list_posts')
     def list_posts(self, request):
         user = request.user
-        posts = Post.objects.filter(user=user).order_by('id')
+        posts = Post.objects.filter(user=user).order_by('created_date')
         serializer = serializers.PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
