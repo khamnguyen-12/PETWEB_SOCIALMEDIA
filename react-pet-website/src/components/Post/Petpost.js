@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { authAPI, endpoints } from '../../configs/APIs';
 import arrowPng from '../../images/next.png';
+import PP1 from '../../images/PP1.jpg';
+import PP2 from '../../images/PP2.jpg';
+import PP3 from '../../images/PP3.jpg';
+import PP4 from '../../images/PP4.png';
+import PP5 from '../../images/PP5.jpg';
+import PP7 from '../../images/PP7.jpg';
+import PP8 from '../../images/PP8.jpg';
+import PP9 from '../../images/PP9.jpg';
+import PP10 from '../../images/PP10.jpg';
+import PP11 from '../../images/PP11.jpg';
+
 
 
 
@@ -14,7 +25,11 @@ const Petpost = () => {
     const [selectedPost, setSelectedPost] = useState(null);
     const [selectedTopicId, setSelectedTopicId] = useState(null);
     const [selectedTopic, setSelectedTopic] = useState(''); // Lưu tên topic đã chọn
+    const imageArray = [PP1, PP2, PP3, PP4, , PP7, PP8, PP9, PP10, PP11];
 
+    const getRandomImage = () => {
+        return imageArray[Math.floor(Math.random() * imageArray.length)];
+    };
 
 
     // Hàm xử lý nhấp vào tiêu đề bài viết
@@ -116,6 +131,12 @@ const Petpost = () => {
     }
 
     const styles = {
+
+        textPetpostContainer: {
+            maxHeight: '300px', // Giới hạn chiều cao
+            overflowY: 'auto',  // Thêm thanh cuộn dọc khi cần
+            padding: '10px',
+        },
 
         petpostTitle: {
             fontSize: '24px',
@@ -303,7 +324,7 @@ const Petpost = () => {
                                             style={{ ...styles.petpostImage }} // Thay đổi kích thước
                                             onError={(e) => {
                                                 e.target.onerror = null; // Ngăn chặn vòng lặp
-                                                e.target.src = 'https://wallpaperaccess.com/full/546539.jpg'; // Hình ảnh dự phòng
+                                                e.target.src = getRandomImage(); // Hình ảnh dự phòng
                                             }}
                                         />
                                     )}
@@ -395,26 +416,18 @@ const Petpost = () => {
             {modalOpen && (
                 <>
                     <div style={styles.overlay} onClick={closeModal}></div>
-                    <div style={{ ...styles.fullPostModal, borderRadius: '15px', overflow: 'hidden' }}> {/* Bo góc modal */}
-                        {/* <button style={styles.closeButton} onClick={closeModal}>
-                            &times;
-                        </button> */}
+                    <div style={{ ...styles.fullPostModal, borderRadius: '15px', overflow: 'hidden' }}>
                         {selectedPost && (
                             <>
-                                <div style={styles.textPetpost}>
-
+                                <div style={styles.textPetpostContainer}>
                                     <h3>{selectedPost.title}</h3>
                                     <p>{selectedPost.content}</p>
-
-
                                     <div style={{ margin: '20px', paddingTop: '44px', textAlign: 'right' }}>
-                                        {/* <h5 >{selectedPost.author?.username || "Tác giả không xác định"}</h5> Thay thế bằng thuộc tính đúng nếu cần */}
                                         <p style={{ fontStyle: 'italic', color: 'gray' }}>
                                             Ngày tạo: {new Date(selectedPost.created_date).toLocaleDateString('vi-VN')}
                                         </p>
                                     </div>
                                 </div>
-
 
                                 <img
                                     src={`http://127.0.0.1:8000/media/${selectedPost.image}`}
@@ -424,21 +437,19 @@ const Petpost = () => {
                                         height: 'auto',
                                         maxHeight: '70vh',
                                         objectFit: 'contain',
-                                        marginTop: '-20px', // Nhích lên trên khoảng trống (thay đổi giá trị nếu cần)
+                                        marginTop: '-20px',
                                     }}
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = 'https://wallpaperaccess.com/full/546539.jpg';
+                                        e.target.src = getRandomImage();
                                     }}
                                 />
-
-
-
                             </>
                         )}
                     </div>
                 </>
             )}
+
         </div>
     );
 };
